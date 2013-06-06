@@ -31,17 +31,17 @@ uri_init = 0;
     REF_MAGNITUDE = 2;
     SIGN_MAGNITUDE = 0.3;
     %Title font properties
-    TITLE_NAME = 'Pacemaker Operation Medtronic Test 2';
+    TITLE_NAME = 'PaceMaker Operation';
     TITLE_FONT = 'AvantGarde';
     TITLE_FONT_SIZE = 20;
     TITLE_FONT_WEIGHT = 'Bold';
     %Signal plot font properties
-    SIGNAL_NAME = 'Pacemaker Signals';
+    SIGNAL_NAME = 'PaceMaker Signals';
     SIGNAL_FONT = 'AvantGarde';
     SIGNAL_FONT_SIZE = 16;
     SIGNAL_FONT_WEIGHT = 'Bold';
     %Timer plot font properties
-    TIMER_NAME = 'Timers';
+    TIMER_NAME = 'Timers'
     TIMER_FONT = 'Arial';
     TIMER_FONT_SIZE = 16;
     TIMER_FONT_WEIGHT = 'Bold';
@@ -53,10 +53,6 @@ uri_init = 0;
     TEXT_FONT = 'Arial';
     TEXT_FONT_SIZE = 16;
     TEXT_FONT_WEIGHT = 'Bold';
-    
-    INPUT_FONT = 'Arial';
-    INPUT_FONT_SIZE = 14;
-    INPUT_FONT_WEIGHT = 'Bold';
 
 %% Test Variables
 %parameters
@@ -83,10 +79,10 @@ total_time = 5000;%ms
 
 gdata=zeros(1,total_time);
 %% Signal occurences
-ASign = [0 300]; %times when an atrial signal occurs
-VSign = [250]; %times when a venticular signal occurs
-AOutput = [1000];
-VOutput = [1250];
+ASign = []%[0 300]; %times when an atrial signal occurs
+VSign = []%[250]; %times when a venticular signal occurs
+AOutput = []%[1000];
+VOutput = []%[1250];
 %% PreDraw Graphs
 figure;
 hold;
@@ -103,8 +99,7 @@ if plotSignals
     xVal = [0,total_time]; 
     yVal = [0,0];
     line(xVal, yVal, 'Color', 'k');
-    set(gca,'XGrid','on');
-    %set(gca,'GridLineStyle', '.');
+    grid on;
 end
 
 if plotTimers
@@ -115,14 +110,9 @@ if plotTimers
     set(gca,'Ylim',[-4,4],'Xlim',[0,total_time]);
     set(gca, 'YTick',[-4:0.5:4]);
     set(gca, 'YTickLabel', {' ',' ',' ',' ',' ',' ',' ','URI',' ','LRI',' ','VARP',' ','VRP', ' ','AVI'},'FontWeight','Bold','FontSize', 16);
-    set(gca,'XGrid','on');
     ylabel(TIMER_NAME,'FontName',TIMER_FONT,'FontSize', TIMER_FONT_SIZE);
     xlabel(XAXIS_NAME,'FontWeight',XAXIS_FONT_WEIGHT,'FontSize', XAXIS_FONT_SIZE);
-    for x = -4:1:4
-        xVal = [0, total_time];
-        yVal = [x, x];
-        line(xVal, yVal,'Color','k');
-    end
+    grid on;
 end
 
 while i< total_time
@@ -140,7 +130,7 @@ while i< total_time
                     subplot(2,1,1)
                 end
                 arrow(startArrow,endArrow,'Length', roLength, 'TipAngle',roTipAngle,'EdgeColor','k','FaceColor','y');
-                text(i+10,SIGN_MAGNITUDE+0.4,'A_{Signal}','FontName', INPUT_FONT,'FontWeight',INPUT_FONT_WEIGHT,'Fontsize', INPUT_FONT_SIZE); 
+                text(i+10,SIGN_MAGNITUDE+0.4,'A Signal','FontWeight',TEXT_FONT_WEIGHT,'Fontsize', TEXT_FONT_SIZE); 
             end
         elseif ismember(i,VSign)
             pace_param=pacemaker_new(pace_param, A_get, 1, 1);
@@ -151,7 +141,7 @@ while i< total_time
                     subplot(2,1,1)
                 end
                 arrow(startArrow,endArrow,'Length', roLength, 'TipAngle',roTipAngle,'EdgeColor','k','FaceColor','w');
-                text(i+10,-SIGN_MAGNITUDE-0.4,'V_{Signal}','FontName', INPUT_FONT,'FontWeight',INPUT_FONT_WEIGHT,'Fontsize', INPUT_FONT_SIZE); 
+                text(i+10,-SIGN_MAGNITUDE-0.4,'V Signal','FontWeight',TEXT_FONT_WEIGHT,'Fontsize', TEXT_FONT_SIZE); 
             end
         else
             pace_param=pacemaker_new(pace_param, A_get, V_get, 1);
@@ -200,7 +190,7 @@ while i< total_time
                     subplot(2,1,1)
                   end
                   arrow(startArrow,endArrow,'Length', roLength, 'TipAngle',roTipAngle,'EdgeColor','k','FaceColor',faceColor);
-                  text(i,height,name,'FontName', TEXT_FONT,'FontWeight',TEXT_FONT_WEIGHT,'Fontsize', TEXT_FONT_SIZE); 
+                  text(i,height,name,'FontWeight',TEXT_FONT_WEIGHT,'Fontsize', TEXT_FONT_SIZE); 
               end
         end
    %% Plot Timer States

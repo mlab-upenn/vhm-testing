@@ -36,16 +36,18 @@ while 1
     switch nextEvent
 % Atrial Input        
         case ATRIAL_INPUT
+            if t == (nextTime + offset)
+                pace_param = pacemaker_new(pace_param,1,0, pace_inter);
+                disp('sent atrial signal');
+                if pace_param.a_sense
+                    disp('pacemaker detected atrial signal');
+                else
+                    disp('pacemaker did not detect atrial signal');
+                end
+            end
             while t < (nextTime + offset) 
                 pace_param = pacemaker_new(pace_param,0,0,pace_inter);
                 t = t+1;
-            end
-            pace_param = pacemaker_new(pace_param,1,0,pace_inter);
-            disp('sent atrial signal');
-            if pace_param.a_sense
-                disp('pacemaker detected atrial signal');
-            else
-                disp('pacemaker did not detect atrial signal');
             end
             t = t+1;
 % Ventricular Input            
