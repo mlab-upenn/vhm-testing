@@ -1,4 +1,4 @@
-load pace_param
+load medtronic_params
 
 
 %% Script Variables

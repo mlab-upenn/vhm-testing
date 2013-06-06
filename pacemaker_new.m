@@ -49,7 +49,9 @@ function pace_param=pacemaker_new(pace_param, A_get, V_get, pace_inter,vsp_en)
 %    AF_interval: measured time of A-A interval (in milliseconds)
 %      VSP_sense: Ventricular sensing period = time delay between v_sense and v_pace
 %            VSP: determines if VSP is used for v_pace. (otherwise wait until AVI) 
-%          PVAAB: Post ventricularatrial blocking period (in milliseconds)   
+%           PVAB: Post ventricularatrial blocking period (in milliseconds)
+%            LRI: LRI state (either 'on' or 'off')
+%
 %pace_inter: determines the step size (in milliseconds) of each iteration
 %            of the function. This is generally 1 millisecond
 %vsp_en: enables VSP. (0 to disable, 1 to enable)
@@ -209,7 +211,7 @@ switch pace_param.AVI
     case 'P'
          % if timer didn't run out
         if pace_param.AVI_cur>0
-            % timer
+            % timer countdown
             pace_param.AVI_cur=pace_param.AVI_cur-pace_inter;
         else
             if strcmp(pace_param.URI,'off')

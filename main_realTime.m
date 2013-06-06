@@ -1,15 +1,16 @@
 
-load pace_param
+load medtronic_params
 pace_inter=1;
 A_get=0;
 V_get=0;
 
-i=0;
-total_time = 5000;%ms
+i=-1;
+lri_switch = 0;
+total_time = 2000;%ms
 gdata=zeros(1,total_time);
 %% Signal occurences
-ASign = [200 400]; %times when an atrial signal occurs
-VSign = [500 900]; %times when a venticular signal occurs
+ASign = [0 300]; %times when an atrial signal occurs
+VSign = [250]; %times when a venticular signal occurs
 %%
 figure;
 hold;
@@ -187,7 +188,7 @@ while i< total_time
                   end
               end
  %% Store Data             
-              gdata(i) = data;
+              gdata(i+1) = data;
               
             
 end
