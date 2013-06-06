@@ -3,11 +3,17 @@ clear;
 plotSignals = 1;
 plotTimers = 1;
 plotIteratively = 0;
-%%
+
+%% Decide what to test
+doTest = 1;
+allowTolerances = 1;
+allowOffsets = 1;
+
+%% Script Variables
+% Timer Global Variables
 avi_switch = 0;
 vrp_switch = 0;
 pvarp_switch = 0;
-lri_switch = 0;
 lri_flip = 0;
 uri_switch = 0;
 
@@ -16,22 +22,44 @@ vrp_init = 0;
 pvarp_init = 0;
 lri_init = 0;
 uri_init = 0;
+% Plot Variables
+    %arrow properties
+    roLength = 10;
+    roTipAngle = 12;
+    PACE_MAGNITUDE = 3;
+    SENSE_MAGNITUDE = 2;
+    REF_MAGNITUDE = 1;
+    SIGN_MAGNITUDE = 0.3;
+
+%% Test Variables
+%parameters
+    tolerance_percent_atrial = 0.09; %Acceptable tolerance for detecting atrial output signals
+    tolerance_percent_ventrical = 0.09; %Acceptable tolerance for detecting ventricular output signals.
+    greatestTolerance = max([tolerance_percent_atrial, tolerance_percent_ventrical]);
+%Global Variables
+    next_Line = 0; %variable to determine which line in the file is being processed
+    offset = 0; %variable to store any necessary offsets
+    a_ifPaced = 0; %boolean to determine if pacemaker paced atrium
+    v_ifPaced = 0; %boolean to determine if pacemaker paced ventricle
+    a_ifSensed = 0; %boolean to determine if pacemaker sensed atrium signal
+    v_ifSensed = 0; %boolean to determine if pacemaker sensed ventricle signal
 %%
 load medtronic_params
 pace_param.mode_switch = 'on';
 pace_inter=1;
+
 A_get=0;
 V_get=0;
 
 i=-1;
-lri_switch = 0;
 total_time = 3000;%ms
+
 gdata=zeros(1,total_time);
 %% Signal occurences
 ASign = [0 300]; %times when an atrial signal occurs
 VSign = [250]; %times when a venticular signal occurs
-AOutput = [1000]
-VOutput = [1250]
+AOutput = [1000];
+VOutput = [1250];
 %% PreDraw Graphs
 figure;
 hold;
@@ -53,6 +81,8 @@ if plotTimers
         subplot(2,1,2);
     end
     set(gca,'Ylim',[-4,4],'Xlim',[0,total_time]);
+    set(gca, 'YTick',[-4:0.5:4]);
+    set(gca, 'YTickLabel', {' ',' ',' ',' ',' ',' ',' ','URI',' ','LRI',' ','VARP',' ','VRP', ' ','AVI'});
     ylabel('timers');
     xlabel('time (milliseconds)');
 end
@@ -67,23 +97,23 @@ while i< total_time
             pace_param=pacemaker_new(pace_param, 1, V_get, 1);
             if plotSignals
                 startArrow = [i,0];
-                endArrow = [i,0.5];
+                endArrow = [i,SIGN_MAGNITUDE];
                 if plotTimers
                     subplot(2,1,1)
                 end
-                arrow(startArrow,endArrow,'EdgeColor','k','FaceColor','y');
-                text(i,0.5,'A Signal','Fontsize', 9); 
+                arrow(startArrow,endArrow,'Length', roLength, 'TipAngle',roTipAngle,'EdgeColor','k','FaceColor','y');
+                text(i,SIGN_MAGNITUDE,'A Signal','Fontsize', 9); 
             end
         elseif ismember(i,VSign)
             pace_param=pacemaker_new(pace_param, A_get, 1, 1);
             if plotSignals
                 startArrow = [i,0];
-                endArrow = [i,-0.5];
+                endArrow = [i,-SIGN_MAGNITUDE];
                 if plotTimers
                     subplot(2,1,1)
                 end
-                arrow(startArrow,endArrow,'EdgeColor','k','FaceColor','w');
-                text(i,-0.5,'V Signal','Fontsize', 9);
+                arrow(startArrow,endArrow,'Length', roLength, 'TipAngle',roTipAngle,'EdgeColor','k','FaceColor','w');
+                text(i,-SIGN_MAGNITUDE,'V Signal','Fontsize', 9);
             end
         else
             pace_param=pacemaker_new(pace_param, A_get, V_get, 1);
@@ -91,30 +121,30 @@ while i< total_time
         if plotSignals
             % a_pace
               if pace_param.a_pace
-                  data=3;
+                  data=PACE_MAGNITUDE;
                   name = 'AP';
                   faceColor = 'r';
               end
               % v_pace
               if pace_param.v_pace               
-                  data=-3;
+                  data=-PACE_MAGNITUDE;
                   name = 'VP';
                   faceColor = 'm';
               end
               % a_sense
               if pace_param.a_sense
-                  data=2;
+                  data=SENSE_MAGNITUDE;
                   name = 'AS';
                   faceColor = 'b';
               end
               % v_sense
               if pace_param.v_sense
-                  data=-2;
+                  data=-SENSE_MAGNITUDE;
                   name = 'VS';
                   faceColor = 'c';
               end
               if pace_param.a_ref
-                  data=1;
+                  data=REF_MAGNITUDE;
                   name = '[AR]';
                   faceColor = 'g';
               end
@@ -125,7 +155,7 @@ while i< total_time
                   if plotTimers
                     subplot(2,1,1)
                   end
-                  arrow(startArrow,endArrow,'EdgeColor','k','FaceColor',faceColor);
+                  arrow(startArrow,endArrow,'Length', roLength, 'TipAngle',roTipAngle,'EdgeColor','k','FaceColor',faceColor);
                   text(i,data,name,'Fontsize', 10);
               end
         end
@@ -247,11 +277,9 @@ while i< total_time
                   end
                   if pace_param.LRI_cur == pace_param.LRI_def-1   
                     if lri_flip == 0
-                        lri_flip  = 1;
-                        lri_switch = 1;
+                        lri_flip  = 1;   
                     else
                         lri_flip = 0;
-                        lri_switch = 1;
                     end  
                     if lri_flip 
                         position = 0.5;
