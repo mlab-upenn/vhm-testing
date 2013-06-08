@@ -128,10 +128,8 @@ if strcmp(pace_param.mode_switch,'on')
     else%no atrial events
         % count timer
         pace_param.AF_interval=pace_param.AF_interval+1;
-        % if the period longer than the maximum LRI and it is currently not
-        % in AVI (i.e. if an atrium signal wasn't previously sensed or
-        % paced
-        if pace_param.AF_interval>pace_param.LRI_def && strcmp(pace_param.AVI, 'off')
+        % if the period longer than LRI
+        if pace_param.AF_interval>pace_param.LRI_def
             % reset timer
             pace_param.AF_interval=0;
      %       if strcmp(pace_param.AVI, 'off')

@@ -1,11 +1,34 @@
+clear;
 load medtronic_params
 pace_param.mode_switch = 'on';
 
 %% Script Variables
+    %Message Constants
+    SENT_A_SIG = 'sent atrial signal at t=';
+    DETECT_A_SIG = 'pacemaker detected atrial signal at t=';
+    NDETECT_A_SIG = 'pacemaker did not detect atrial signal at t=';
+    
+    SENT_V_SIG = 'sent ventrical signal at t=';
+    DETECT_V_SIG = 'pacemaker detected ventrical signal at t=';
+    NDETECT_V_SIG = 'pacemaker did not detect atrial signal at t=';
+    
+    A_EARLY = 'Pacemaker sent atrial signal early at t=';
+    A_ON = 'Pacemaker sent atrial signal On Time at t=';
+    A_LATE = 'Pacemaker sent atrial signal late at t=';
+    A_WRONG = 'Pacemaker incorrectly sent atrial signal. at t=';
+    
+    V_EARLY = 'Pacemaker sent ventrical signal early at t=';
+    V_ON = 'Pacemaker sent ventrical signal On Time at t=';
+    V_LATE = 'Pacemaker sent ventrical signal late at t=';
+    V_WRONG = 'Pacemaker incorrectly sent ventrical signal at t=';
+    
+    
+    
+    
     %Parameters    
     tolerance_atrial = 100; %Acceptable tolerance (in ms) for detecting atrial output signals
     tolerance_ventrical = 100; %Acceptable tolerance (in ms) for detecting ventrical output signals.
-    greatestTolerance = max([tolerance_percent_atrial, tolerance_percent_ventrical]);
+    greatestTolerance = max([tolerance_atrial, tolerance_ventrical]);
     pace_inter = 1;
     %Global Variables
     next_Line = 0; %variable to determine which line in the file is being processed
@@ -36,42 +59,37 @@ pace_param.mode_switch = 'on';
 
     nextNextTime = sample_File(nextLine+1,1);
     nextNextEvent = sample_File(nextLine+1,2);
+
 while 1
     switch nextEvent
 % Atrial Input        
         case ATRIAL_INPUT
             if t == (nextTime + offset)
                 pace_param = pacemaker_new(pace_param,1,0, pace_inter);
-                disp('sent atrial signal');
+                disp(strcat(SENT_A_SIG,num2str(t)));
                 t = t+1;
-                nextLine = nextLine + 1;
-                nextTime = sample_File(nextLine,1);
-                nextEvent = sample_File(nextLine,2);
-                nextNextTime = sample_File(nextLine+1,1);
-                nextNextEvent = sample_File(nextLine+1,2);
-                
+                [nextLine, nextTime, nextEvent,...
+                    nextNextTime,nextNextEvent, sample_File] = increment(nextLine, nextTime, nextEvent,...
+                    nextNextTime,nextNextEvent, sample_File);
                 if pace_param.a_sense
-                    disp('pacemaker detected atrial signal');
+                    disp(strcat(DETECT_A_SIG,num2str(t)));
                 else
-                    disp('pacemaker did not detect atrial signal');
+                    disp(strcat(NDETECT_A_SIG,num2str(t)));
                 end
             end
 % VENTRICAL Input            
         case VENTRICAL_INPUT
             if t == (nextTime + offset)
                 pace_param = pacemaker_new(pace_param,0,1, pace_inter);
-                disp('sent ventrical signal');
+                disp(strcat(SENT_V_SIG,num2str(t)));
                 t = t +1;
-                nextLine = nextLine + 1;
-                nextTime = sample_File(nextLine,1);
-                nextEvent = sample_File(nextLine,2);
-                nextNextTime = sample_File(nextLine+1,1);
-                nextNextEvent = sample_File(nextLine+1,2);
-                
+                [nextLine, nextTime, nextEvent,...
+                    nextNextTime,nextNextEvent, sample_File] = increment(nextLine, nextTime, nextEvent,...
+                    nextNextTime,nextNextEvent, sample_File);
                 if pace_param.a_sense
-                    disp('pacemaker detected ventrical signal');
+                    disp(strcat(DETECT_V_SIG,num2str(t)));
                 else
-                    disp('pacemaker did not detect ventrical signal');
+                    disp(strcat(NDETECT_V_SIG,num2str(t)));
                 end
             end
 % Atrial Output           
@@ -80,53 +98,48 @@ while 1
             a_highBound = (nextTime+offset)+tolerance_atrial;
             if t < a_lowBound
                 if pace_param.a_pace == 1
-                    disp('Pacemaker sent atrial signal early');
+                    disp(strcat(A_EARLY,num2str(t)));
                     offset = offset + (t-nextTime);
-                    nextLine = nextLine + 1;
-                    nextTime = sample_File(nextLine,1);
-                    nextEvent = sample_File(nextLine,2);
-                    nextNextTime = sample_File(nextLine+1,1);
-                    nextNextEvent = sample_File(nextLine+1,2);
+                    [nextLine, nextTime, nextEvent,...
+                    nextNextTime,nextNextEvent, sample_File] = increment(nextLine, nextTime, nextEvent,...
+                    nextNextTime,nextNextEvent, sample_File);
                 end
                 if pace_param.v_pace == 1
                     if nextNextEvent == VENTRICAL_OUTPUT
-                        disp('Pacemaker sent ventrical signal early');
+                        disp(strcat(V_EARLY,num2str(t)));
                     else
-                        disp('Pacemaker incorrectly sent ventrical signal');
+                        disp(strcat(V_WRONG,num2str(t)));
                     end
                 end
             elseif t >= a_lowBound && t <= a_highBound
                 if pace_param.a_pace == 1
                     offset = offset + (t-nextTime);
-                    disp('Pacemaker sent atrial signal On Time');
-                    nextLine = nextLine + 1;
-                    nextTime = sample_File(nextLine,1);
-                    nextEvent = sample_File(nextLine,2);
-                    nextNextTime = sample_File(nextLine+1,1);
-                    nextNextEvent = sample_File(nextLine+1,2);
+                    disp(strcat(A_ON,num2str(t)));
+                    
+                    [nextLine, nextTime, nextEvent,...
+                    nextNextTime,nextNextEvent, sample_File] = increment(nextLine, nextTime, nextEvent,...
+                    nextNextTime,nextNextEvent, sample_File);
                 end
                 if pace_param.v_pace == 1
                     if nextNextEvent == VENTRICAL_OUTPUT
-                        disp('Pacemaker sent ventrical signal early');
+                        disp(strcat(V_EARLY,num2str(t)));
                     else
-                        disp('Pacemaker incorrectly sent ventrical signal');
+                        disp(strcat(V_WRONG,num2str(t)));
                     end
                 end
             elseif t > a_highBound
                 if pace_param.a_pace == 1
                     offset = offset + (t-nextTime);
-                    disp('Pacemaker sent atrial signal late');
-                    nextLine = nextLine + 1;
-                    nextTime = sample_File(nextLine,1);
-                    nextEvent = sample_File(nextLine,2);
-                    nextNextTime = sample_File(nextLine+1,1);
-                    nextNextEvent = sample_File(nextLine+1,2);
+                    disp(strcat(A_LATE,num2str(t)));
+                    [nextLine, nextTime, nextEvent,...
+                    nextNextTime,nextNextEvent, sample_File] = increment(nextLine, nextTime, nextEvent,...
+                    nextNextTime,nextNextEvent, sample_File);
                 end
                 if pace_param.v_pace == 1
                     if nextNextEvent == VENTRICAL_OUTPUT
-                        disp('Pacemaker sent ventrical signal early');
+                        disp(strcat(V_EARLY,num2str(t)));
                     else
-                        disp('Pacemaker incorrectly sent ventrical signal');
+                        disp(strcat(V_WRONG,num2str(t)));
                     end
                 end
             end
@@ -137,49 +150,43 @@ while 1
             v_highBound = (nextTime+offset)+tolerance_atrial;
             if t < v_lowBound
                 if pace_param.a_pace == 1
-                    disp('Pacemaker sent atrial signal late');
+                    disp(strcat(A_LATE,num2str(t)));
                     offset = offset + (t-nextTime);    
                 end
                 if pace_param.v_pace == 1
-                    disp('Pacemaker sent ventrical signal too early');
-                    nextLine = nextLine + 1;
-                    nextTime = sample_File(nextLine,1);
-                    nextEvent = sample_File(nextLine,2);
-                    nextNextTime = sample_File(nextLine+1,1);
-                    nextNextEvent = sample_File(nextLine+1,2);
+                    disp(strcat(V_EARLY,num2str(t)));
+                    [nextLine, nextTime, nextEvent,...
+                    nextNextTime,nextNextEvent, sample_File] = increment(nextLine, nextTime, nextEvent,...
+                    nextNextTime,nextNextEvent, sample_File);
                 end
             elseif t >= v_lowBound && t <= v_highBound
                 if pace_param.v_pace == 1
                     offset = offset + (t-nextTime);
-                    disp('Pacemaker send ventrical signal On Time');
-                    nextLine = nextLine + 1;
-                    nextTime = sample_File(nextLine,1);
-                    nextEvent = sample_File(nextLine,2);
-                    nextNextTime = sample_File(nextLine+1,1);
-                    nextNextEvent = sample_File(nextLine+1,2);
+                    disp(strcat(V_ON,num2str(t)));
+                    [nextLine, nextTime, nextEvent,...
+                    nextNextTime,nextNextEvent, sample_File] = increment(nextLine, nextTime, nextEvent,...
+                    nextNextTime,nextNextEvent, sample_File);
                 end
                 if pace_param.a_pace == 1
                     if nextNextEvent == ATRIAL_OUTPUT
-                        disp('Pacemaker sent atrial signal too early');
+                        disp(strcat(A_EARLY,num2str(t)));
                     else
-                        disp('Pacemaker incorrectly sent atrial signal');
+                        disp(strcat(A_WRONG,num2str(t)));
                     end
                 end
             elseif t > v_highBound
                 if pace_param.v_pace == 1
                     offset = offset + (t-nextTime);
-                    disp('Pacemaker sent ventrical signal late');
-                    nextLine = nextLine + 1;
-                    nextTime = sample_File(nextLine,1);
-                    nextEvent = sample_File(nextLine,2);
-                    nextNextTime = sample_File(nextLine+1,1);
-                    nextNextEvent = sample_File(nextLine+1,2);
+                    disp(strcat(A_EARLY,num2str(t)));
+                    [nextLine, nextTime, nextEvent,...
+                    nextNextTime,nextNextEvent, sample_File] = increment(nextLine, nextTime, nextEvent,...
+                    nextNextTime,nextNextEvent, sample_File);
                 end
                 if pace_param.a_pace == 1
                     if nextNextEvent == ATRIAL_OUTPUT
-                        disp('Pacemaker sent atrial signal too early');
+                        disp(strcat(A_EARLY,num2str(t)));
                     else
-                        disp('Pacemaker incorrectly sent atrial signal');
+                        disp(strcat(A_WRONG,num2str(t)));
                     end
                 end
             end
@@ -187,17 +194,21 @@ while 1
     end
     
     %break out of while loop once finished testing
-    if t > (nextTime + offset)*(1+greatestTolerance) && nextLine > length(sample_File)
-        t
+    if t > (nextTime + offset)+ greatestTolerance && nextLine > length(sample_File)
+        %t
         break;
     %else continue on.    
     else
         pace_param = pacemaker_new(pace_param,0,0, pace_inter);
         t = t+1;
-        t
-        nextLine
+        %t
+        %nextLine
         
     end 
 end
 
     disp('Complete');
+    disp(' ');
+    
+   % function [ ] = increment(nxtTime, nxtEvent, nNTime, nNEvent, smp_File)
+   % end
