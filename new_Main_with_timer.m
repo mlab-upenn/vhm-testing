@@ -1,5 +1,18 @@
+%{
+Test Issues
+Test 21
+Test 28
+Test 38
+Test 40
+Test 42
+Test 43
+Test 50
+Test 53
+
+%}
 close all;
 clear;
+clc;
 %% Decide what to plot
 plotSignals = 1;
 plotTimers = 1;
@@ -13,11 +26,16 @@ allowOffsets = 1;
 plotTest = 1;
 
 %% Preallocation
-load medtronic_params
-load medtronic_test_2
-sample_File = test_File_13;
+load Pacemaker_models/medtronic_params
+load Medtronic_tests/medtronic_test_2
+sample_File = test_File_50;
 pace_param.mode_switch = 'on';
+%{
+pace_param.AVI_def = 150;
+pace_param.AVI_cur = 150;
+%}
 pace_inter=1;
+vsp_mode = 1;
 
 A_get=0;
 V_get=0;
@@ -80,7 +98,11 @@ if useDataFile
     V_OFFSET_COLOR = 'c';
     ALPHA_FACE_VALUE = 0.1;
     ALPHA_EDGE_VALUE = 0.25;
-    ifPrinted = 0;
+    ifBoundsPrinted = 0;
+    ifAOutput = 0;
+    ifVOutput = 0;
+    input_done = 0;
+    output_done = 0;
 end
     XAXIS_NAME = 'time (milliseconds)';
     XAXIS_FONT_WEIGHT = 'Bold';
@@ -134,6 +156,8 @@ if useDataFile
     VENTRICAL_INPUT = 2;
     ATRIAL_OUTPUT = 3;
     VENTRICAL_OUTPUT = 4;
+    A_OUTPUT_V_INPUT = 5; %If pacemaker outputs signal to atrium and detects a ventricular signal at the same time.
+    V_OUTPUT_A_INPUT = 6; %If pacemaker outputs signal to ventricule and detects an atrial signal at the same time.
     %Global Variables
     nextTime = 0; %the next time an event occurs.
     nextNextTime = 0; % the next time for the event after the expected event
@@ -147,9 +171,7 @@ if ~useDataFile
     AOutput = [1000];
     VOutput = [1250];
 elseif useDataFile
-    [nextLine, nextTime, nextEvent,...
-    nextNextTime,nextNextEvent, sample_File] = increment(nextLine, nextTime, nextEvent,...
-    nextNextTime,nextNextEvent, sample_File);
+    read_next; %see script/ or see function increment
 end
 %% PreDraw Graphs
 if plotSignals || plotTimers
@@ -179,7 +201,7 @@ if plotSignals || plotTimers
         %Timer Plot
         set(gca,'Ylim',[-4,4],'Xlim',[0,total_time]);
         set(gca, 'YTick',[-4:0.5:4]);
-        set(gca, 'YTickLabel', {' ',' ',' ',' ',' ',' ',' ','URI',' ','LRI',' ','VARP',' ','VRP', ' ','AVI'},'FontWeight','Bold','FontSize', 16);
+        set(gca, 'YTickLabel', {' ',' ',' ',' ',' ',' ',' ','URI',' ','LRI',' ','PVARP',' ','VRP', ' ','AVI'},'FontWeight','Bold','FontSize', 16);
         set(gca,'XGrid','on');
         ylabel(TIMER_NAME,'FontName',TIMER_FONT,'FontSize', TIMER_FONT_SIZE);
         xlabel(XAXIS_NAME,'FontWeight',XAXIS_FONT_WEIGHT,'FontSize', XAXIS_FONT_SIZE);
@@ -198,16 +220,14 @@ while t< total_time
     %% Do Test
     if doTest
         outSignal = 0;
-         if outSignal == 0
-            pace_param = pacemaker_new(pace_param,0,0, pace_inter);
-         end
+        if outSignal == 0
+            pace_param = pacemaker_new(pace_param,0,0, pace_inter,vsp_mode);
+        end
         switch nextEvent
 % Atrial Input        
         case ATRIAL_INPUT
-            if t == (nextTime + offset)
-                outSignal = 1;
-                pace_param = pacemaker_new(pace_param,1,0, pace_inter);
-                disp(strcat(SENT_A_SIG,num2str(t)));
+            atrial_input %see script
+            if outSignal == 1;
                 if plotSignals
                     if plotTimers
                         subplot(2,1,1)
@@ -215,21 +235,13 @@ while t< total_time
                     arrow([t,0],[t,SIGN_MAGNITUDE],'Length', roLength, 'TipAngle',roTipAngle,'EdgeColor','k','FaceColor','y');
                     text(t+10,SIGN_MAGNITUDE+0.4,'A_{Signal}','FontName', INPUT_FONT,'FontWeight',INPUT_FONT_WEIGHT,'Fontsize', INPUT_FONT_SIZE); 
                 end
-                [nextLine, nextTime, nextEvent,...
-                    nextNextTime,nextNextEvent, sample_File] = increment(nextLine, nextTime, nextEvent,...
-                    nextNextTime,nextNextEvent, sample_File);
-                if pace_param.a_sense
-                    disp(strcat(DETECT_A_SIG,num2str(t)));
-                else
-                    disp(strcat(NDETECT_A_SIG,num2str(t)));
-                end
+                read_next; %see script/ or see function increment
+                ifBoundsPrinted = 0;
             end
-% VENTRICAL Input            
+% Ventrical Input            
         case VENTRICAL_INPUT
-            if t == (nextTime + offset)
-                outSignal = 1;
-                pace_param = pacemaker_new(pace_param,0,1, pace_inter);
-                disp(strcat(SENT_V_SIG,num2str(t)));
+            ventricular_input %see script
+            if outSignal == 1;
                 if plotSignals
                     if plotTimers
                         subplot(2,1,1)
@@ -237,147 +249,57 @@ while t< total_time
                     arrow([t,0],[t,-SIGN_MAGNITUDE],'Length', roLength, 'TipAngle',roTipAngle,'EdgeColor','k','FaceColor','w');
                     text(t+10,-SIGN_MAGNITUDE-0.4,'V_{Signal}','FontName', INPUT_FONT,'FontWeight',INPUT_FONT_WEIGHT,'Fontsize', INPUT_FONT_SIZE); 
                 end
-                [nextLine, nextTime, nextEvent,...
-                    nextNextTime,nextNextEvent, sample_File] = increment(nextLine, nextTime, nextEvent,...
-                    nextNextTime,nextNextEvent, sample_File);
-                if pace_param.a_sense
-                    disp(strcat(DETECT_V_SIG,num2str(t)));
-                else
-                    disp(strcat(NDETECT_V_SIG,num2str(t)));
-                end
+                read_next; %see script/ or see function increment
+                ifBoundsPrinted = 0;
             end
 % Atrial Output           
         case ATRIAL_OUTPUT
-            if nextLine == 1
-               disp(strcat(A_ON,num2str(t)));
-               ifPrinted = 0;
-               pace_param.a_pace = 1;
-               [nextLine, nextTime, nextEvent,...
-               nextNextTime,nextNextEvent, sample_File] = increment(nextLine, nextTime, nextEvent,...
-               nextNextTime,nextNextEvent, sample_File);
-            else
-                if allowOffsets
-                    a_lowBound = (nextTime+offset)-tolerance_atrial;
-                    a_highBound = (nextTime+offset)+tolerance_atrial;
-                else
-                    a_lowBound = (nextTime)-tolerance_atrial;
-                    a_highBound = (nextTime)+tolerance_atrial;
-                end
-                if t < a_lowBound
-                    if pace_param.a_pace == 1
-                        disp(strcat(A_EARLY,num2str(t)));
-                        offset = offset + (t-nextTime);
-                        ifPrinted = 0;
-                        [nextLine, nextTime, nextEvent,...
-                        nextNextTime,nextNextEvent, sample_File] = increment(nextLine, nextTime, nextEvent,...
-                        nextNextTime,nextNextEvent, sample_File);
-                    end
-                    if pace_param.v_pace == 1
-                        if nextNextEvent == VENTRICAL_OUTPUT
-                            disp(strcat(V_EARLY,num2str(t)));
-                        else
-                            disp(strcat(V_WRONG,num2str(t)));
-                        end
-                    end
-                elseif t >= a_lowBound && t <= a_highBound
-                    if pace_param.a_pace == 1
-                        offset = offset + (t-nextTime);
-                        disp(strcat(A_ON,num2str(t)));
-                        ifPrinted = 0;
-                        [nextLine, nextTime, nextEvent,...
-                        nextNextTime,nextNextEvent, sample_File] = increment(nextLine, nextTime, nextEvent,...
-                        nextNextTime,nextNextEvent, sample_File);
-                    end
-                    if pace_param.v_pace == 1
-                        if nextNextEvent == VENTRICAL_OUTPUT
-                            disp(strcat(V_EARLY,num2str(t)));
-                        else
-                            disp(strcat(V_WRONG,num2str(t)));
-                        end
-                    end
-                elseif t > a_highBound
-                    if pace_param.a_pace == 1
-                        offset = offset + (t-nextTime);
-                        disp(strcat(A_LATE,num2str(t)));
-                        ifPrinted = 0;
-                        [nextLine, nextTime, nextEvent,...
-                        nextNextTime,nextNextEvent, sample_File] = increment(nextLine, nextTime, nextEvent,...
-                        nextNextTime,nextNextEvent, sample_File);
-                    end
-                    if pace_param.v_pace == 1
-                        if nextNextEvent == VENTRICAL_OUTPUT
-                            disp(strcat(V_EARLY,num2str(t)));
-                        else
-                            disp(strcat(V_WRONG,num2str(t)));
-                        end
-                    end
-                end
+            atrial_output %see script
+            if ifAOutput == 1 
+                read_next; %see script/ or see function increment
+                ifBoundsPrinted = 0;
             end
-            
 % VENTRICAL Output
         case VENTRICAL_OUTPUT
-            if nextLine == 1
-               disp(strcat(V_ON,num2str(t)));
-               ifPrinted = 0;
-               pace_param.v_pace = 1;
-               [nextLine, nextTime, nextEvent,...
-               nextNextTime,nextNextEvent, sample_File] = increment(nextLine, nextTime, nextEvent,...
-               nextNextTime,nextNextEvent, sample_File);
-            else
-                if allowOffsets
-                    v_lowBound = (nextTime+offset)-tolerance_ventrical;
-                    v_highBound = (nextTime+offset)+tolerance_ventrical;
-                else
-                    v_lowBound = (nextTime)-tolerance_ventrical;
-                    v_highBound = (nextTime)+tolerance_ventrical;
-                end
-                if t < v_lowBound
-                    if pace_param.a_pace == 1
-                        disp(strcat(A_LATE,num2str(t)));
-                        
-                    end
-                    if pace_param.v_pace == 1
-                        disp(strcat(V_EARLY,num2str(t)));
-                        offset = offset + (t-nextTime);
-                        ifPrinted = 0;
-                        [nextLine, nextTime, nextEvent,...
-                        nextNextTime,nextNextEvent, sample_File] = increment(nextLine, nextTime, nextEvent,...
-                        nextNextTime,nextNextEvent, sample_File);
-                    end
-                elseif t >= v_lowBound && t <= v_highBound
-                    if pace_param.v_pace == 1
-                        offset = offset + (t-nextTime);
-                        disp(strcat(V_ON,num2str(t)));
-                        ifPrinted = 0;
-                        [nextLine, nextTime, nextEvent,...
-                        nextNextTime,nextNextEvent, sample_File] = increment(nextLine, nextTime, nextEvent,...
-                        nextNextTime,nextNextEvent, sample_File);
-                    end
-                    if pace_param.a_pace == 1
-                        if nextNextEvent == ATRIAL_OUTPUT
-                            disp(strcat(A_EARLY,num2str(t)));
-                        else
-                            disp(strcat(A_WRONG,num2str(t)));
-                        end
-                    end
-                elseif t > v_highBound
-                    if pace_param.v_pace == 1
-                        offset = offset + (t-nextTime);
-                        disp(strcat(V_LATE,num2str(t)));
-                        ifPrinted = 0;
-                        [nextLine, nextTime, nextEvent,...
-                        nextNextTime,nextNextEvent, sample_File] = increment(nextLine, nextTime, nextEvent,...
-                        nextNextTime,nextNextEvent, sample_File);
-                    end
-                    if pace_param.a_pace == 1
-                        if nextNextEvent == ATRIAL_OUTPUT
-                            disp(strcat(A_EARLY,num2str(t)));
-                        else
-                            disp(strcat(A_WRONG,num2str(t)));
-                        end
-                    end
-                end
-            end           
+            ventricular_output %see script
+            if ifVOutput == 1
+                read_next; %see script/ or see function increment
+                ifBoundsPrinted = 0;
+            end
+% TODO: Deal with these cases          
+        case A_OUTPUT_V_INPUT
+            atrial_output 
+            ventricular_input
+            if pace_param.a_pace ==1
+            end      
+            if ifAOutput == 1
+                output_done = 1;
+            end
+            if outSignal == 1
+                input_done = 1;
+            end
+            if input_done && output_done
+                read_next;
+                ifBoundsPrinted = 0;
+                input_done = 0;
+                output_done = 0;
+            end
+        case V_OUTPUT_A_INPUT
+            read_next;
+            %{
+            ventricular_output
+            atrial_input
+            if ifVOutput == 1
+                output_done = 1;
+            end
+            if outSignal == 1
+                input_done = 1;
+            end
+            if input_done && output_done
+                read_next;
+                ifBoundsPrinted = 0;
+            end
+           %}
         end
         %break out of while loop once finished testing  
         %{
@@ -395,6 +317,7 @@ while t< total_time
  
         end   
  %}
+        
     end
     %% Plot Pacemaker Sensing/Pacing
     if plotSignals
@@ -425,8 +348,8 @@ while t< total_time
         %% plot bound lines
         elseif useDataFile && plotTest
             switch nextEvent
-                case ATRIAL_OUTPUT
-                    if ifPrinted == 0
+                case {ATRIAL_OUTPUT ,A_OUTPUT_V_INPUT}   
+                    if ifBoundsPrinted == 0
                         if plotTimers
                             subplot(2,1,1)
                         end
@@ -439,10 +362,10 @@ while t< total_time
                             a_highBound = (nextTime+offset)+tolerance_atrial;
                             patch([a_lowBound,a_highBound,a_highBound,a_lowBound],[0 0 4 4],A_OFFSET_COLOR,'EdgeColor', A_OFFSET_COLOR,'EdgeAlpha',ALPHA_EDGE_VALUE,'FaceAlpha',ALPHA_FACE_VALUE);
                         end
-                        ifPrinted = 1;
+                        ifBoundsPrinted = 1;
                     end
-                case VENTRICAL_OUTPUT
-                    if ifPrinted == 0;
+                case {VENTRICAL_OUTPUT, V_OUTPUT_A_INPUT}
+                    if ifBoundsPrinted == 0;
                         if plotTimers
                             subplot(2,1,1)
                         end
@@ -455,54 +378,84 @@ while t< total_time
                             v_highBound = (nextTime+offset)+tolerance_ventrical;
                             patch([v_lowBound,v_highBound,v_highBound,v_lowBound],[-4 -4 0 0],V_OFFSET_COLOR,'EdgeColor', V_OFFSET_COLOR,'EdgeAlpha',ALPHA_EDGE_VALUE,'FaceAlpha',ALPHA_FACE_VALUE);
                         end
-                        ifPrinted = 1;
+                        ifBoundsPrinted = 1;
                     end
             end
         end %end plotting boundlines
     
     data=0;
-            % a_pace
-              if pace_param.a_pace
-                  data=PACE_MAGNITUDE;
-                  name = 'AP';
-                  faceColor = 'r';
-              end
-              % v_pace
-              if pace_param.v_pace               
-                  data=-PACE_MAGNITUDE;
-                  name = 'VP';
-                  faceColor = 'm';
-              end
-              % a_sense
-              if pace_param.a_sense
-                  data=SENSE_MAGNITUDE;
-                  name = 'AS';
-                  faceColor = 'b';
-              end
-              % v_sense
-              if pace_param.v_sense
-                  data=-SENSE_MAGNITUDE;
-                  name = 'VS';
-                  faceColor = 'c';
-              end
-              if pace_param.a_ref
-                  data=REF_MAGNITUDE;
-                  name = '[AR]';
-                  faceColor = 'g';
-              end
-              
-              if(data ~= 0)
-                  if data >= 0
-                      height = data + 0.3;
-                  else
-                      height = data - 0.3;
-                  end
-                  if plotTimers
-                    subplot(2,1,1)
-                  end
-                  arrow([t,0],[t,data],'Length', roLength, 'TipAngle',roTipAngle,'EdgeColor','k','FaceColor',faceColor);
-                  text(t,height,name,'FontName', TEXT_FONT,'FontWeight',TEXT_FONT_WEIGHT,'Fontsize', TEXT_FONT_SIZE); 
-              end
+        % a_pace
+        if pace_param.a_pace
+            data=PACE_MAGNITUDE;
+            name = 'AP';
+            faceColor = 'r';
+            height = data + 0.3;
+            if plotTimers
+                subplot(2,1,1)
+            end
+            arrow([t,0],[t,data],'Length', roLength, 'TipAngle',roTipAngle,'EdgeColor','k','FaceColor',faceColor);
+            text(t,height,name,'FontName', TEXT_FONT,'FontWeight',TEXT_FONT_WEIGHT,'Fontsize', TEXT_FONT_SIZE); 
+        end
+        % v_pace
+        if pace_param.v_pace               
+            data=-PACE_MAGNITUDE;
+            name = 'VP';
+            faceColor = 'm';
+            height = data - 0.3;
+            if plotTimers
+                subplot(2,1,1)
+            end
+            arrow([t,0],[t,data],'Length', roLength, 'TipAngle',roTipAngle,'EdgeColor','k','FaceColor',faceColor);
+            text(t,height,name,'FontName', TEXT_FONT,'FontWeight',TEXT_FONT_WEIGHT,'Fontsize', TEXT_FONT_SIZE); 
+        end
+        % a_sense
+        if pace_param.a_sense
+            data=SENSE_MAGNITUDE;
+            name = 'AS';
+            faceColor = 'b';
+            height = data + 0.3;
+            if plotTimers
+                subplot(2,1,1)
+            end
+            arrow([t,0],[t,data],'Length', roLength, 'TipAngle',roTipAngle,'EdgeColor','k','FaceColor',faceColor);
+            text(t,height,name,'FontName', TEXT_FONT,'FontWeight',TEXT_FONT_WEIGHT,'Fontsize', TEXT_FONT_SIZE); 
+        end
+        % v_sense
+        if pace_param.v_sense
+            data=-SENSE_MAGNITUDE;
+            name = 'VS';
+            faceColor = 'c';
+            height = data - 0.3;
+            if plotTimers
+                subplot(2,1,1)
+            end
+            arrow([t,0],[t,data],'Length', roLength, 'TipAngle',roTipAngle,'EdgeColor','k','FaceColor',faceColor);
+            text(t,height,name,'FontName', TEXT_FONT,'FontWeight',TEXT_FONT_WEIGHT,'Fontsize', TEXT_FONT_SIZE); 
+        end
+        %a_ref
+        if pace_param.a_ref
+            data=REF_MAGNITUDE;
+            name = '[AR]';
+            faceColor = 'g';
+            height = data + 0.3;
+            if plotTimers
+                subplot(2,1,1)
+            end
+            arrow([t,0],[t,data],'Length', roLength, 'TipAngle',roTipAngle,'EdgeColor','k','FaceColor',faceColor);
+            text(t,height,name,'FontName', TEXT_FONT,'FontWeight',TEXT_FONT_WEIGHT,'Fontsize', TEXT_FONT_SIZE); 
+        end
+        % v_ref
+        if pace_param.v_ref
+            data = -REF_MAGNITUDE;
+            name ='[VR]';
+            faceColor = 'k';
+            height = data - 0.3;
+            if plotTimers
+                subplot(2,1,1)
+            end
+            arrow([t,0],[t,data],'Length', roLength, 'TipAngle',roTipAngle,'EdgeColor','k','FaceColor',faceColor);
+            text(t,height,name,'FontName', TEXT_FONT,'FontWeight',TEXT_FONT_WEIGHT,'Fontsize', TEXT_FONT_SIZE); 
+        end
    end
    %% Plot Timer States
    if plotTimers
@@ -550,8 +503,8 @@ while t< total_time
                     avi_init = t;
                     rectangle('Position',[t,AVI_LOWER_Y, pace_param.AVI_def,1],'FaceColor',AVI_DEF_COLOR);
                     rectangle('Position',[t,AVI_LOWER_Y, pace_param.ABP,0.5],'FaceColor',BLOCK_COLOR);
-                    if strcmp(pace_param.VSP,'on')
-                        rectangle('Position',[(t+pace_param.ABP),AVI_LOWER_Y, pace_param.VSP_sense,0.5],'FaceColor',VSP_COLOR);
+                    if vsp_mode == 1
+                        rectangle('Position',[t,AVI_LOWER_Y+0.25, pace_param.VSP_sense,0.25],'FaceColor',VSP_COLOR);
                     end
                 %else color the current timer state.    
                 elseif plotIteratively
@@ -684,8 +637,9 @@ while t< total_time
         pause(0.00001);
         pace_param.LRI_cur
     end
-              
+   
 end
+disp(' ');
 if plotSignals || plotTimers
     set(gcf, 'PaperPositionMode', 'auto');
 end

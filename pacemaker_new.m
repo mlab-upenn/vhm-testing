@@ -49,8 +49,9 @@ function pace_param=pacemaker_new(pace_param, A_get, V_get, pace_inter,vsp_en)
 %    AF_interval: measured time of A-A interval (in milliseconds)
 %      VSP_sense: Ventricular sensing period = time delay between v_sense and v_pace
 %            VSP: determines if VSP is used for v_pace. (otherwise wait until AVI) 
-%           PVAB: Post ventricularatrial blocking period (in milliseconds)
-%            LRI: LRI state (either 'on' or 'off')
+%           PAVB: Post atrialventricular blocking period (in milliseconds)
+%            PVC: Post ventricular complex (time in milliseconds_         
+%          v_ref: venticular refractory signal (0 or 1);
 %
 %pace_inter: determines the step size (in milliseconds) of each iteration
 %            of the function. This is generally 1 millisecond
@@ -77,6 +78,7 @@ a_p=0;
 v_s=0;
 v_p=0;
 a_r=0;
+v_r=0;
 
 
 %% mode switch
@@ -149,7 +151,7 @@ end
 %% LRI
 
 % if v_sense or v_pace
-if pace_param.v_pace || pace_param.v_sense
+if (pace_param.v_pace || pace_param.v_sense) && strcmp(pace_param.PVARP, 'off')
     % reset LRI timer
     pace_param.LRI_cur=pace_param.LRI_def;
 end
@@ -160,7 +162,7 @@ if pace_param.LRI_cur>0
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %------Changed---------------
     % if AEI reached
-    if pace_param.LRI_cur==pace_param.AVI_def % && (strcmp(pace_param.AVI,'S')||strcmp(pace_param.AVI,'P'))%on
+    if pace_param.LRI_cur==pace_param.AVI_def  && ~(strcmp(pace_param.AVI,'S')||strcmp(pace_param.AVI,'P'))%if AVI is not on
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         if strcmp(pace_param.mode,'DDD')
             % pace atrium
@@ -184,7 +186,7 @@ switch pace_param.AVI
         if pace_param.a_pace
             % go to AVI state
             pace_param.AVI='P';
-        elseif pace_param.a_sense
+        elseif pace_param.a_sense 
                 pace_param.AVI='S';
         end
     case 'S' % sensed AVI
@@ -237,16 +239,16 @@ switch pace_param.AVI
                 pace_param.AVI_cur=pace_param.AVI_cur-pace_inter;
             end
         end
-        
+% TODO: Fix this issue.        
         % if ventricle event
-        if V_get
+        if V_get == 1
             AVI_not_blocking = pace_param.AVI_def-pace_param.ABP;
-            AVI_not_blocking_not_VSP = pace_param.AVI_def-pace_param.ABP-pace_param.VSP_sense;
+            AVI_not_blocking_not_VSP = pace_param.AVI_def-pace_param.VSP_sense;
             %if the model is currently in AVI, and in the VSP period.
             if pace_param.AVI_cur < AVI_not_blocking && pace_param.AVI_cur > AVI_not_blocking_not_VSP
                 if vsp_en
                     pace_param.VSP='on';
-                    V_get=0;
+                    v_r=1; %TODO: add pulse after VSP period
                 else
                         % reset AVI timer
                     pace_param.AVI_cur=pace_param.AVI_def;
@@ -262,16 +264,14 @@ switch pace_param.AVI
                 
                 %if the model is currently in AVI, and is in the ABP
                     %period
-            elseif pace_param.AVI_cur > (pace_param.AVI_def-pace_param.ABP)
-                        V_get=0;
-                  
+            elseif pace_param.AVI_cur > AVI_not_blocking
+                v_r=1;                  
             end
                 
-        end
-   % doesn't make sense. Should be if After VSP.     
+        end  
         if strcmp(pace_param.VSP,'on')
             
-                if pace_param.AVI_cur == (pace_param.AVI_def-110)
+                if pace_param.AVI_cur == (pace_param.AVI_def-pace_param.VSP_sense)
                     v_p=1;
                     % reset AVI timer
                         pace_param.AVI_cur=pace_param.AVI_def;
@@ -316,6 +316,9 @@ switch pace_param.PVARP
         if A_get
             a_r=1;
         end
+        if V_get
+            v_r=1;
+        end
     
 end
 
@@ -324,7 +327,7 @@ end
 switch pace_param.VRP
     case 'off' % Idle
         % if ventricle event sensed
-        if V_get
+        if V_get && strcmp(pace_param.PVARP,'off') && strcmp(pace_param.AVI, 'off')
             % v_sense
             v_s=1;
             % go to VRP state
@@ -390,6 +393,7 @@ pace_param.a_pace=a_p;
 pace_param.v_sense=v_s;
 pace_param.v_pace=v_p;
 pace_param.a_ref=a_r;
+pace_param.v_ref=v_r;
 
 
 
