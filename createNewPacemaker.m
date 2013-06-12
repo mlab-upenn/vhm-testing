@@ -4,13 +4,16 @@ new_pace.mode = 'DDD';
 
 new_pace.LRI_cur = 1000;
 new_pace.LRI_def = 1000;
+new_pace.LRI_extend_avi = 'off';
 
 new_pace.URI_cur = 600;
 new_pace.URI_def = 600;
 new_pace.URI = 'off';
 
-new_pace.AVI_cur = 250;
-new_pace.AVI_def = 250;
+new_pace.pAVI_cur = 250;
+new_pace.pAVI_def = 250;
+new_pace.sAVI_cur = 250;
+new_pace.sAVI_def = 250;
 new_pace.AVI = 'off';
 
 new_pace.ABP = 30;
@@ -43,3 +46,5 @@ new_pace.a_sense = 0;
 new_pace.v_sense = 0;
 new_pace.a_ref = 0;
 new_pace.v_ref = 0;
+
+new_pace

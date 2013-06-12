@@ -1,26 +1,21 @@
 %{
 Test Issues
-Test 9
-Test 22
-Test 27
-Test 40
-Test 41
-Test 43
-Test 50
-Test 53
-Test 54
-test 55
+Test 38 - typo, PVC issue
+Test 41 - A-A-interval issue
+Test 50 - PVC issue
+Test 53 -Atrial output, ven input
 %}
+%TODO: AS, VS, VR, AR arrows get printed twice. fix.
 close all;
 clear;
 clc;
-index = [40:43, 45:55]; %[1:29, 31:34, 36:39];
-for i= 1:length(index)
+index = [1:29, 31:34, 36:39, 40:43, 45:55]; %[1:29, 31:34, 36:39];
+%for i= 1:length(index)
 %% Decide what to plot
 plotSignals = 1;
 plotTimers = 1;
-plotIteratively = 0;
-skipTo = 990; %if plotting iteratively, select how far you want to skip to.
+plotIteratively = 1;
+skipTo = 550; %if plotting iteratively, select how far you want to skip to.
 
 %% Decide what to test
 doTest = 1;
@@ -31,9 +26,9 @@ plotTest = 1;
 
 %% Preallocation
 load Pacemaker_models/medtronic_params
-load Medtronic_tests/medtronic_test_2
+load Medtronic_tests/medtronic_test_1-55
 pace_param = new_pace;
-number = index(i)
+number = 41 % index(i)
 fileName = strcat('test_File_', num2str(number));
 sample_File = eval(fileName);
 pace_param.mode_switch = 'on';
@@ -42,11 +37,15 @@ switch number
         pace_param.URI_cur = 750;
         pace_param.URI_def = 750;
     case {50}
-        pace_param.AVI_cur = 150;
-        pace_param.AVI_def = 150;
+        pace_param.pAVI_cur = 150;
+        pace_param.pAVI_def = 150;
+        pace_param.sAVI_cur = 150;
+        pace_param.sAVI_def = 150;
     case {53}
-        pace_param.AVI_def = 300;
-        pace_param.AVI_cur = 300;
+        pace_param.pAVI_def = 300;
+        pace_param.pAVI_cur = 300;
+        pace_param.sAVI_def = 300;
+        pace_param.sAVI_cur = 300;
         pace_param.URI_cur = 666;
         pace_param.URI_def = 666;
         pace_param.LRI_cur = 1050;
@@ -56,14 +55,12 @@ switch number
         pace_param.LRI_def = 600;
         pace_param.URI_cur = 500;
         pace_param.URI_def = 500;
-        pace_param.AVI_cur = 80;
-        pace_param.AVI_def = 80;
+        pace_param.sAVI_cur = 80;
+        pace_param.sAVI_def = 80;
+        pace_param.pAVI_cur = 80;
+        pace_param.pAVI_def = 80;
         pace_param.VSP_sense = 80;
 end
-%{
-pace_param.AVI_def = 150;
-pace_param.AVI_cur = 150;
-%}
 pace_inter=1;
 vsp_mode = 1;
 
@@ -83,6 +80,7 @@ if plotTimers
     pvarp_switch = 0;
     lri_flip = 0;
     uri_switch = 0;
+    uri_printed = 0;
 
     avi_init = 0;
     vrp_init = 0;
@@ -343,7 +341,7 @@ while t< total_time
  
         end   
  
-        
+      
     end
     %% Plot Pacemaker Sensing/Pacing
     if plotSignals
@@ -488,7 +486,8 @@ while t< total_time
     %Constant values
     AVI_UPPER_Y = 4;
     AVI_LOWER_Y = 3;
-    AVI_DEF_COLOR = [1 90/255 0];
+    P_AVI_DEF_COLOR =  [102/255 0 51/255];
+    S_AVI_DEF_COLOR = [1 90/255 0];
     AVI_CUR_COLOR = 'red';
    
     VRP_UPPER_Y = 3;
@@ -524,10 +523,19 @@ while t< total_time
                   if plotSignals
                     subplot(2,1,2)
                   end
-                if pace_param.AVI_cur == pace_param.AVI_def
+                  if strcmp(pace_param.AVI,'S')
+                      AVI_cur = pace_param.sAVI_cur;
+                      AVI_def = pace_param.sAVI_def;
+                      AVI_DEF_COLOR = S_AVI_DEF_COLOR;
+                  elseif strcmp(pace_param.AVI,'P')
+                      AVI_cur = pace_param.pAVI_cur;
+                      AVI_def = pace_param.pAVI_def;
+                      AVI_DEF_COLOR = P_AVI_DEF_COLOR;
+                  end
+                if AVI_cur == AVI_def
                     avi_switch = 1;
                     avi_init = t;
-                    rectangle('Position',[t,AVI_LOWER_Y, pace_param.AVI_def,1],'FaceColor',AVI_DEF_COLOR);
+                    rectangle('Position',[t,AVI_LOWER_Y, AVI_def,1],'FaceColor',AVI_DEF_COLOR);
                     if strcmp(pace_param.AVI, 'P')
                         rectangle('Position',[t,AVI_LOWER_Y, pace_param.ABP,0.5],'FaceColor',BLOCK_COLOR);
                     end
@@ -608,13 +616,13 @@ while t< total_time
                         position = 0;
                         pos = 0.5;
                     end
-                    rectangle('Position',[t,LRI_LOWER_Y + position, pace_param.LRI_def,0.5],'FaceColor',LRI_DEF_COLOR);
+                    rectangle('Position',[t-2,LRI_LOWER_Y + position, pace_param.LRI_def,0.5],'FaceColor',LRI_DEF_COLOR);
                     
                     width = (t-1) - lri_init; 
                     if width > 0
                         rectangle('Position',[lri_init, LRI_LOWER_Y + pos,width,0.25],'FaceColor', LRI_CUR_COLOR);
                     end
-                    lri_init = t;
+                    lri_init = t-2;
                     
                   elseif plotIteratively
                     if lri_flip
@@ -644,26 +652,36 @@ while t< total_time
                     subplot(2,1,2)
                   end
                   if pace_param.URI_cur == pace_param.URI_def
-                    uri_switch = 1;
+                    uri_switch = 1; %flag to determine if URI became on.
+                    %plot out the expected length of the timer
+                    rectangle('Position',[t,URI_LOWER_Y, pace_param.URI_def,0.5],'FaceColor',URI_DEF_COLOR);
+                    
+                    %if previous URI ended prematurely, plot out the current timer
+                    width = (t-1) - uri_init;
+                    if width > 0 && uri_printed ~= 1
+                        rectangle('Position',[uri_init,URI_LOWER_Y+0.5,width,0.5],'FaceColor',URI_CUR_COLOR);
+                        %uri_switch = 0;
+                        
+                    end
+                    uri_printed = 0;
                     uri_init = t;
-                    rectangle('Position',[t,URI_LOWER_Y, pace_param.URI_def,1],'FaceColor',URI_DEF_COLOR);
                   elseif plotIteratively
                     rectangle('Position',[t-1,URI_LOWER_Y+0.5, 1,0.5],'FaceColor',URI_CUR_COLOR, 'EdgeColor', URI_CUR_COLOR);
                   end
               end
-              
+                %Plot the current timer 
                   if strcmp(pace_param.URI,'off') && uri_switch==1
                     width = (t-1) - uri_init;
                     rectangle('Position',[uri_init,URI_LOWER_Y+0.5,width,0.5],'FaceColor',URI_CUR_COLOR);
-                    uri_switch = 0;
-                    uri_init = 0;
+                    uri_switch = 0; 
+                    uri_printed = 1; %checks to see if the current timer got printed
                   end
    end
    
     if plotIteratively
         if skipTo <= 0 || skipTo <= t
             pause(0.001);
-            pace_param.LRI_cur
+            la = [t,pace_param.LRI_cur]
         end
      %   pace_param.AF_interval
     end
@@ -679,4 +697,4 @@ disp(' ');
 if plotSignals || plotTimers
     set(gcf, 'PaperPositionMode', 'auto');
 end
-end
+%end
