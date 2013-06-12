@@ -49,8 +49,6 @@ switch number
         pace_param.AVI_cur = 300;
         pace_param.URI_cur = 666;
         pace_param.URI_def = 666;
-        pace_param.LRI_cur = 1050;
-        pacE_param.LRI_def = 1050;
     case {54, 55}
         pace_param.LRI_cur = 600;
         pace_param.LRI_def = 600;
