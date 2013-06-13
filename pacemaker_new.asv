@@ -189,6 +189,12 @@ if pace_param.LRI_cur>0
 else
     % reset timer
     pace_param.LRI_cur=pace_param.LRI_def;
+    %{
+    $$if strcmp(pace_param.lower_rate_timing_mode, 'A')
+        %pace atrium
+        a_p = 1;
+    $$end
+%}
     pace_param.LRI_extend_avi = 'off'; 
     if strcmp(pace_param.mode,'VDI')
         v_p=1;
@@ -199,7 +205,7 @@ end
 %$$if strcmp(pace_param.lower_rate_timing_mode, 'V') 
     if (pace_param.v_pace || pace_param.v_sense) && strcmp(pace_param.PVARP, 'off')%% strcmp(pace_param.VSP, 'off')
         % reset LRI timer
-        pace_param.LRI_cur=pace_param.LRI_def;
+        %pace_param.LRI_cur=pace_param.LRI_def;
         %% This is technically for atrial-based lr sensing. TODO: remove this
         %if v_pace was a result of VSP, do not reset timer
         if strcmp(pace_param.VSP, 'on') && pace_param.v_pace
@@ -212,7 +218,10 @@ end
         pace_param.LRI_extend_avi = 'off';
     end
     % TODO: include atrial based LRI.
-%$$elseif strcmp(pace_param.lower_rate_timing_mode, 'A')           
+%$$elseif strcmp(pace_param.lower_rate_timing_mode, 'A')
+    if pace_param.a_pace || pace_param.a_sense
+        %reset LRI timer
+        pace_param.LRI_cur = pace_param.LRI_def;
         %if v_pace was a result of VSP, do not reset timer
 %        if strcmp(pace_param.VSP, 'on') && pace_param.v_pace
 %            pace_param.VSP = 'off'; %go back to idle state
@@ -220,7 +229,8 @@ end
 %            pace_param.LRI_cur=pace_param.LRI_def;
 %        elseif (pace_param.LRI_cur >= pace_param.pAVI_def || pace_param.LRI_cur >= pace_param.sAVI_def) && pace_param.v_sense %if v_sense, and was not detected in expected AVI period, reset timer.
 %            pace_param.LRI_cur=pace_param.LRI_def;
-%        end  
+%        end
+    end
 %    pace_param.LRI_extend_avi = 'off';
         
 %$$end
