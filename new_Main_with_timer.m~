@@ -53,6 +53,8 @@ switch number
         pace_param.LRI_cur = pace_param.LRI_def - pace_param.sAVI_def;
         
     case {54, 55}
+        pace_param.LRI_cur = 600;
+        pace_param.LRI_def = 600;
         pace_param.URI_cur = 500;
         pace_param.URI_def = 500;
         pace_param.sAVI_cur = 80;
@@ -60,9 +62,6 @@ switch number
         pace_param.pAVI_cur = 80;
         pace_param.pAVI_def = 80;
         pace_param.VSP_sense = 80;
-        pace_param.LRI_def = 600;
-        pace_param.LRI_cur = pace_param.LRI_def - pace_param.sAVI_def;
-        
 end
 pace_inter=1;
 vsp_mode = 1;

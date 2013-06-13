@@ -4,7 +4,7 @@ new_pace.mode = 'DDD';
 %TODO: take these different modes into account
 
 new_pace.lower_rate_timing_mode = 'A'; %'V'
-new_pace.upper_rate_resp_mode = 'Wenckebach'; %'Fixed-ratio Block'
+new_paceupper_rate_resp_mode = 'Wenckebach'; %'Fixed-ratio Block'
 
 new_pace.LRI_cur = 1000;
 new_pace.LRI_def = 1000;

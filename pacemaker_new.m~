@@ -233,9 +233,8 @@ elseif strcmp(pace_param.lower_rate_timing_mode, 'A')
 %            pace_param.LRI_cur=pace_param.LRI_def;
 %        end
     end
-    pAVI_period = pace_param.LRI_def - pace_pace_param.pAVI_def;
-    sAVI_period = pace_param.LRI_def - pace_pace_param.sAVI_def;
-    if pace_param.v_sense && (pAVI_period || sAVI_period) %if a pvc was detected, and wasn't in the AVI period
+    pAVI_period = pace_param. pace_pace_param.pAVI_def
+    if pace_param.v_sense && (pace_param.LRI_cur >= pace_pace_param.pAVI_def || pace_param.LRI_cur >= pace_param.sAVI_def) %if a pvc was detected, and wasn't in the AVI period
         %reset LRI timer
         pace_param.LRI_cur = pace_param.LRI_def;
         %subtract AVI period from the timer
