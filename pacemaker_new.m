@@ -1,4 +1,4 @@
-function pace_param=pacemaker_new(pace_param, A_get, V_get, pace_inter,vsp_en)
+function pace_param=pacemaker_new(pace_param, A_get, V_get, pace_inter,vsp_en) %ventricular based, or atrial based LR timing
 % This function update parameters for the pacemaker in one time stamp
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Inputs:
@@ -177,13 +177,15 @@ if pace_param.LRI_cur>0
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %------Changed---------------
     % if AEI reached
-    if pace_param.LRI_cur==pace_param.pAVI_def  && strcmp(pace_param.AVI,'off')%if AVI is not on
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        if strcmp(pace_param.mode,'DDD')
-            % pace atrium
-            a_p=1;
+%    $$if strcmp(pace_param.lower_rate_timing_mode, 'V')
+        if pace_param.LRI_cur==pace_param.pAVI_def  && strcmp(pace_param.AVI,'off')%if AVI is not on
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            if strcmp(pace_param.mode,'DDD')
+                % pace atrium
+                a_p=1;
+            end
         end
-    end
+%    $$end
 else
     % reset timer
     pace_param.LRI_cur=pace_param.LRI_def;
@@ -194,29 +196,48 @@ else
     end
 end
 % if v_sense or v_pace, and if not in PVARP
-if (pace_param.v_pace || pace_param.v_sense) && strcmp(pace_param.PVARP, 'off')%% strcmp(pace_param.VSP, 'off')
-    % reset LRI timer
-    %if v_pace was a result of VSP, do not reset timer
-    if strcmp(pace_param.VSP, 'on') && pace_param.v_pace
-        pace_param.VSP = 'off'; %go back to idle state
-    elseif strcmp(pace_param.LRI_extend_avi, 'off') && pace_param.v_pace %if v_pace was not after extended AVI period, reset timer
+%$$if strcmp(pace_param.lower_rate_timing_mode, 'V') 
+    if (pace_param.v_pace || pace_param.v_sense) && strcmp(pace_param.PVARP, 'off')%% strcmp(pace_param.VSP, 'off')
+        % reset LRI timer
         pace_param.LRI_cur=pace_param.LRI_def;
-    elseif (pace_param.LRI_cur >= pace_param.pAVI_def || pace_param.LRI_cur >= pace_param.sAVI_def) && pace_param.v_sense %if v_sense, and was not detected in expected AVI period, reset timer.
-        pace_param.LRI_cur=pace_param.LRI_def;
-    end  
-    pace_param.LRI_extend_avi = 'off';
-end
+        %% This is technically for atrial-based lr sensing. TODO: remove this
+        %if v_pace was a result of VSP, do not reset timer
+        if strcmp(pace_param.VSP, 'on') && pace_param.v_pace
+            pace_param.VSP = 'off'; %go back to idle state
+        elseif strcmp(pace_param.LRI_extend_avi, 'off') && pace_param.v_pace %if v_pace was not after extended AVI period, reset timer
+            pace_param.LRI_cur=pace_param.LRI_def;
+        elseif (pace_param.LRI_cur >= pace_param.pAVI_def || pace_param.LRI_cur >= pace_param.sAVI_def) && pace_param.v_sense %if v_sense, and was not detected in expected AVI period, reset timer.
+            pace_param.LRI_cur=pace_param.LRI_def;
+        end  
+        pace_param.LRI_extend_avi = 'off';
+    end
+    % TODO: include atrial based LRI.
+%$$elseif strcmp(pace_param.lower_rate_timing_mode, 'A')           
+        %if v_pace was a result of VSP, do not reset timer
+%        if strcmp(pace_param.VSP, 'on') && pace_param.v_pace
+%            pace_param.VSP = 'off'; %go back to idle state
+%        elseif strcmp(pace_param.LRI_extend_avi, 'off') && pace_param.v_pace %if v_pace was not after extended AVI period, reset timer
+%            pace_param.LRI_cur=pace_param.LRI_def;
+%        elseif (pace_param.LRI_cur >= pace_param.pAVI_def || pace_param.LRI_cur >= pace_param.sAVI_def) && pace_param.v_sense %if v_sense, and was not detected in expected AVI period, reset timer.
+%            pace_param.LRI_cur=pace_param.LRI_def;
+%        end  
+%    pace_param.LRI_extend_avi = 'off';
+        
+%$$end
 %if extended AVI, reset the timer
+%$$if strcmp(pace_param.upper_rate_resp_mode, 'Wenckebach')
     AVI_cur = 0;
     if strcmp(pace_param.AVI, 'S')
         AVI_cur = pace_param.sAVI_cur;
     elseif strcmp(pace_param.AVI, 'P')
         AVI_cur = pace_param.pAVI_cur;
     end
-if AVI_cur < 0 && strcmp(pace_param.LRI_extend_avi, 'off')
-    pace_param.LRI_cur = pace_param.LRI_def;
-    pace_param.LRI_extend_avi = 'on';
-end
+    if AVI_cur < 0 && strcmp(pace_param.LRI_extend_avi, 'off')
+        pace_param.LRI_cur = pace_param.LRI_def;
+        pace_param.LRI_extend_avi = 'on';
+    end
+%$$elseif strcmp(pace_param.upper_rate_resp_mode,'Fixed-ratio Block')
+%end
 
 
 %% AVI
@@ -236,47 +257,33 @@ switch pace_param.AVI
             % timer countdown
             pace_param.sAVI_cur=pace_param.sAVI_cur-pace_inter;
         else
-            if strcmp(pace_param.URI,'off')
-                
-                if strcmp(pace_param.mode,'DDD')
-                % pace ventricle
-                    v_p=1;
-                    pace_param.VRP='on';
-                end
-                
-%                 if pace_param.AVI_cur>pace_para{2,4}-ABP
-                % reset AVI timer
-                pace_param.sAVI_cur=pace_param.sAVI_def;
-                % go back to Idle state
-                pace_param.AVI='off';
-            else
-                % extended AVI, minus value will be used by URI timer to
-                % deliver V_pace
-                pace_param.sAVI_cur=pace_param.sAVI_cur-pace_inter;
-            end 
-        end
-        %if ventricle event
-        if V_get == 1
-            AVI_not_blocking_not_VSP = pace_param.sAVI_def-pace_param.VSP_sense;
-            %if the model is currently in AVI, and in the VSP period.
-            if pace_param.sAVI_cur >= AVI_not_blocking_not_VSP
-                if vsp_en
-                    pace_param.VSP='on';
-                    v_r=1;
-                else
+            %if strcmp(pace_param.upper_rate_resp_mode, 'Wenckebach')        
+                if strcmp(pace_param.URI,'off')
+                    if strcmp(pace_param.mode,'DDD')
+                    % pace ventricle
+                        v_p=1;
+                        pace_param.VRP='on';
+                    end 
+%                   if pace_param.AVI_cur>pace_para{2,4}-ABP
                     % reset AVI timer
                     pace_param.sAVI_cur=pace_param.sAVI_def;
                     % go back to Idle state
                     pace_param.AVI='off';
+                else
+                    % extended AVI, minus value will be used by URI timer to
+                    % deliver V_pace
+                    pace_param.sAVI_cur=pace_param.sAVI_cur-pace_inter;
                 end
-            %if the model is currently in AVI, and not in the VSP period    
-            elseif pace_param.sAVI_cur < AVI_not_blocking_not_VSP
-                % reset AVI timer
-                pace_param.sAVI_cur=pace_param.sAVI_def;
-                % go back to Idle state
-                pace_param.AVI='off';
-                v_s = 1;
-            end
+            %elseif strcmp(pace_param.upper_rate_resp_mode, 'Fixed-ratio Block')
+            %end
+        end
+        %if ventricle event
+        if V_get == 1
+            v_s=1;
+             % reset AVI timer
+            pace_param.sAVI_cur=pace_param.sAVI_def;
+            % go back to Idle state
+            pace_param.AVI='off';
         end
         %if atrial event
         if A_get == 1
@@ -429,7 +436,7 @@ end
 
 %% URI
 
-switch pace_param.URI %%previously pace_param.VRP Check again.
+switch pace_param.URI 
     case 'off' % Idle
         % if v_pace or v_sense
         if pace_param.v_pace || pace_param.v_sense
@@ -447,19 +454,22 @@ switch pace_param.URI %%previously pace_param.VRP Check again.
             % reset timer
             pace_param.URI_cur=pace_param.URI_def;
             % if extended AVI
-            if (strcmp(pace_param.AVI,'S') && pace_param.sAVI_cur < 0) || (strcmp(pace_param.AVI,'P') && pace_param.pAVI_cur < 0)
-                % deliver pacing
-                v_p=1;
-                % reset AVI value
-                if strcmp(pace_param.AVI,'S')
-                    pace_param.sAVI_cur=pace_param.sAVI_def;
-                elseif strcmp(pace_param.AVI,'P')
-                    pace_param.pAVI_cur=pace_param.pAVI_def;
+            %$$if strcmp(pace_param.upper_rate_resp_mode, 'Wenckebach')
+                if (strcmp(pace_param.AVI,'S') && pace_param.sAVI_cur < 0) || (strcmp(pace_param.AVI,'P') && pace_param.pAVI_cur < 0)
+                    % deliver pacing
+                    v_p=1;
+                    % reset AVI value
+                    if strcmp(pace_param.AVI,'S')
+                        pace_param.sAVI_cur=pace_param.sAVI_def;
+                    elseif strcmp(pace_param.AVI,'P')
+                        pace_param.pAVI_cur=pace_param.pAVI_def;
+                    end
+                    pace_param.AVI = 'off';
                 end
-                pace_param.AVI = 'off';
-            end
-             % go back to Idle state, if a ventricular stimuli wasn't
-             % detected
+            %$$elseif strcmp(pace_param.upper_rate_resp_mode, 'Fixed-ratio Block')
+            %end
+            % go back to Idle state, if a ventricular stimuli wasn't
+            % detected
             if ~pace_param.v_sense
                 pace_param.URI='off';
             end

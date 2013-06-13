@@ -1,7 +1,11 @@
 clear;
 new_pace.mode_switch = 'on';
 new_pace.mode = 'DDD';
-
+%TODO: take these different modes into account
+%{
+new_pace.lower_rate_timing_mode = 'A' %'V'
+new_pace_upper_rate_resp_mode = 'Wenckebach' %'Fixed-ratio Block'
+%}
 new_pace.LRI_cur = 1000;
 new_pace.LRI_def = 1000;
 new_pace.LRI_extend_avi = 'off';
@@ -15,6 +19,10 @@ new_pace.pAVI_def = 250;
 new_pace.sAVI_cur = 250;
 new_pace.sAVI_def = 250;
 new_pace.AVI = 'off';
+
+new_pace.AEI_cur = 750;
+new_pace.AEI_def = 750;
+new_pace.AEI = 'off'
 
 new_pace.ABP = 30;
 
