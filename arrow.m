@@ -556,7 +556,7 @@ while (any(axnotdone)),
 			% adjust to printed size
 			textpos = textpos * min(curap(3:4)./textpos);
 			curap = [curap(1:2)+(curap(3:4)-textpos)/2 textpos];
-		else,
+        else,
 			% adjust for pixel roundoff
 			textpos = textpos * min(curapscreen(3:4)./textpos);
 			curap = [curap(1:2)+(curap(3:4)-textpos)/2 textpos];
@@ -962,6 +962,7 @@ if (nargout<=1),
 		ARROW_AXLIMITS = oldaxlims(find(any(oldaxlims(:,2:7)'~=lims)),:);
 		if ~isempty(ARROW_AXLIMITS),
 			warning(arrow_warnlimits(ARROW_AXLIMITS,narrows));
+
 		end;
 	end;
 else,
