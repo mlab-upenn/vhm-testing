@@ -2,8 +2,7 @@
 Test Issues
 9 - offset from VS
 22 - offset from VS
-25, 27, 33, 37, 41, 43, 55    - same
-54,42,41,28, 24   - VSP 
+34,
 45- typo
 Test 38 - typo, PVC issue
 Test 41 - A-A-interval issue
@@ -11,15 +10,15 @@ Test 50 - PVC issue
 Test 53 -Atrial output, ven input
 %}
 %TODO: AS, VS, VR, AR arrows get printed twice. fix.
-close all;
+%close all;
 clear;
 clc;
 index = [1:29, 31:34, 36:39, 40:43, 45:55]; %[1:29, 31:34, 36:39];
 try
 for i= 1:length(index)
 %% Decide what to plot
-plotSignals = 1;
-plotTimers = 1;
+plotSignals = 0;
+plotTimers = 0;
 breakEarly = 1;
 plotIteratively = 0;
 skipTo = 750; %if plotting iteratively, select how far you want to skip to.
@@ -421,7 +420,7 @@ while t< total_time
                 input_done = 1;
             end
             if input_done && output_done
-                read_next;
+                read_next
                 ifBoundsPrinted = 0;
                 input_done = 0;
                 output_done = 0;
@@ -655,7 +654,9 @@ end
                 if pace_param.v_ref
                     rectangle('Position',[t,VRP_LOWER_Y, pace_param.VRP_def,1],'FaceColor',R_VRP_DEF_COLOR);
                     width = (t-1) - vrp_init;
-                    rectangle('Position',[vrp_init,VRP_LOWER_Y+0.5,width,0.5],'FaceColor',VRP_CUR_COLOR);
+                    if width > 0
+                        rectangle('Position',[vrp_init,VRP_LOWER_Y+0.5,width,0.5],'FaceColor',VRP_CUR_COLOR);
+                    end
                     vrp_switch = 1;
                     vrp_init = t;
                 elseif pace_param.VRP_cur == pace_param.VRP_def ||pace_param.v_sense || pace_param.v_pace

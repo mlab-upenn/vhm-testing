@@ -414,7 +414,7 @@ switch pace_param.PVARP
             end
         end
         % if v_sense or v_pace
-        if pace_param.v_pace || pace_param.v_sense
+        if pace_param.v_pace || pace_param.v_sense || pace_param.v_ref
             % go to ARP state
             pace_param.PVARP='on';
             % acco
@@ -439,6 +439,7 @@ switch pace_param.PVARP
                 a_r=1;
             end
         end
+        if pace_
         
     
 end
@@ -449,11 +450,14 @@ switch pace_param.VRP
     case 'off' % Idle
         % if ventricle event sensed
         if V_get
-            %if not in a 
-            % v_sense
-            v_s=1;
-            % go to VRP state
-            pace_param.VRP='on';
+            %if not during a blanking period
+            pAVI_not_blocking = pace_param.pAVI_def-pace_param.PAVB;
+            if ~(strcmp(pace_param.AVI, 'P') && pace_param.pAVI_cur > pAVI_not_blocking) 
+                % v_sense
+                v_s=1;
+                % go to VRP state
+                pace_param.VRP='on';
+            end
         end
         % if v_pace or v_ref
         if pace_param.v_pace || pace_param.v_ref
@@ -480,6 +484,9 @@ switch pace_param.VRP
                 %reset the timer
                 pace_param.VRP_cur = pace_param.VRP_def;
             end
+        end
+        if pace_param.v_pace
+            pace_param.VRP_cur = pace_param.VRP_def;
         end
 end
 

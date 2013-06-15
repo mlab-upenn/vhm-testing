@@ -273,10 +273,10 @@ end
 switch pace_param.AVI
     case 'off' % Idle
         % if a_sense or a_pace
-        if pace_param.a_pace
+        if pace_param.a_pace || a_p
             % go to AVI state
             pace_param.AVI='P';
-        elseif pace_param.a_sense 
+        elseif pace_param.a_sense || a_s 
                 pace_param.AVI='S';
    %     elseif pace_param.a_ref
    %             pace_param.AVI = 'R';
@@ -355,7 +355,6 @@ switch pace_param.AVI
         if V_get == 1
             %if the model is currently in AVI, and is in the PVAB period  
             if pace_param.pAVI_cur > pAVI_not_blocking
-                %v_r=1; 
             %if the model is currently in AVI, and in the VSP period, but not the PVAB period.
             elseif pace_param.pAVI_cur <= pAVI_not_blocking && pace_param.pAVI_cur >= pAVI_not_blocking_not_VSP
                 if strcmp(pace_param.VSP_enabled, 'on')
@@ -414,7 +413,7 @@ switch pace_param.PVARP
             end
         end
         % if v_sense or v_pace
-        if pace_param.v_pace || pace_param.v_sense
+        if pace_param.v_pace || pace_param.v_sense || pace_param.v_ref
             % go to ARP state
             pace_param.PVARP='on';
             % acco
@@ -438,6 +437,9 @@ switch pace_param.PVARP
             if pace_param.PVARP_cur <= PVARP_not_blanking
                 a_r=1;
             end
+        end
+        if pace_param.v_pace || pace_param.v_sense || pace_param.v_ref
+            pace_param.PVARP_cur=pace_param.PVARP_def;
         end
         
     

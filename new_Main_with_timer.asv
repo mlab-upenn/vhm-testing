@@ -2,8 +2,7 @@
 Test Issues
 9 - offset from VS
 22 - offset from VS
-25, 27, 33, 37, 41, 43, 55    - same
-54,42,41,28, 24   - VSP 
+34,
 45- typo
 Test 38 - typo, PVC issue
 Test 41 - A-A-interval issue
@@ -14,14 +13,14 @@ Test 53 -Atrial output, ven input
 close all;
 clear;
 clc;
-index = [1:29, 31:34, 36:39, 40:43, 45:55]; %[1:29, 31:34, 36:39];
+index = [ 50 53]  %[1:29, 31:34, 36:39, 40:43, 45:55]; %[1:29, 31:34, 36:39];
 try
 for i= 1:length(index)
 %% Decide what to plot
 plotSignals = 1;
 plotTimers = 1;
 breakEarly = 1;
-plotIteratively = 1;
+plotIteratively = 0;
 skipTo = 750; %if plotting iteratively, select how far you want to skip to.
 
 %% Decide what to test
