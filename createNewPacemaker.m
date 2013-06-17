@@ -35,8 +35,8 @@ new_pace.AEI = 'off'
 %}
 
 %ventricular timers after ventricular stimulus (pg 168)
-new_pace.VRP_cur = 250;%can detect signals after VBP, but does not restart LRI
-new_pace.VRP_def = 250;
+new_pace.VRP_cur = 300;%can detect signals after VBP, but does not restart LRI
+new_pace.VRP_def = 300;
 new_pace.VRP = 'off';
 new_pace.VBP = 0; %blocks all signals in VRP
 %atrial timers after ventricle stimulus

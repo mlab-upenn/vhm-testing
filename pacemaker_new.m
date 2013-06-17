@@ -238,13 +238,14 @@ elseif strcmp(pace_param.lower_rate_timing_mode, 'A')
         if strcmp(pace_param.lower_rate_PVC_response, 'AEI')
             AEI_period = pace_param.LRI_def - pace_param.pAVI_def;
             pace_param.LRI_cur = AEI_period;
+            disp('extended')
         % reset the LRI timer to default if LRI enabled    
         elseif strcmp(pace_param.lower_rate_PVC_response, 'LRI')
             pace_param.LRI_cur = pace_param.LRI_def;
         end
         if strcmp(pace_param.PVC_extend_PVARP, 'on') %extend the PVARP period if enabled
             if pace_param.PVARP_def < pace_param.PVARP_extend_def
-                pace_param.PVARP_cur = pace_param.PVARP_extend_def;
+                pace_param.PVARP_cur = pace_param.PVARP_extend_def;     
             end
         end
     end
@@ -423,7 +424,9 @@ switch pace_param.PVARP
         if pace_param.PVARP_cur>0
             % timer countdown
             pace_param.PVARP_cur=pace_param.PVARP_cur-pace_inter;
-            
+            if (pace_param.v_pace || pace_param.v_sense || pace_param.v_ref) && pace_param.PVARP_cur < pace_param.PVARP_def
+                pace_param.PVARP_cur=pace_param.PVARP_def;
+            end
         else
             % reset PVARP timer
             pace_param.PVARP_cur=pace_param.PVARP_def;
@@ -438,9 +441,7 @@ switch pace_param.PVARP
                 a_r=1;
             end
         end
-        if pace_param.v_pace || pace_param.v_sense || pace_param.v_ref
-            pace_param.PVARP_cur=pace_param.PVARP_def;
-        end
+        
         
     
 end
@@ -480,11 +481,13 @@ switch pace_param.VRP
     %TODO: get this working!
         if V_get
             VRP_not_blanking = pace_param.VRP_def - pace_param.VBP;
-            if pace_param.VRP_cur <= VRP_not_blanking
+            if pace_param.VRP_cur <= VRP_not_blanking && pace_param.VRP_cur > 0
                 v_r=1; %don't use v_s b/c it reset the LRI clock. 
                 %reset the timer
-                pace_param.VRP_cur = pace_param.VRP_def;
+            elseif pace_param.VRP_cur <= VRP_not_blanking && pace_param.VRP_cur <= 0
+                v_s = 1;
             end
+            pace_param.VRP_cur = pace_param.VRP_def;
         end
         if pace_param.v_pace
             pace_param.VRP_cur = pace_param.VRP_def;
@@ -497,7 +500,7 @@ switch pace_param.URI
     case 'off' % Idle
         if strcmp(pace_param.upper_rate_resp_mode, 'Wenckebach')
             % if v_pace or v_sense
-            if pace_param.v_pace || pace_param.v_sense
+            if pace_param.v_pace || pace_param.v_sense || pace_param.v_ref
                 % go to URI state
                 pace_param.URI='on';
             end
@@ -510,7 +513,7 @@ switch pace_param.URI
         if strcmp(pace_param.upper_rate_resp_mode, 'Wenckebach')
             % if timer didn't run out and if a ventricular stimulus wasn't
             % detected
-            if pace_param.URI_cur > 0 && ~pace_param.v_sense
+            if pace_param.URI_cur > 0 && ~pace_param.v_sense && ~pace_param.v_ref
                 % timer countdown
                 pace_param.URI_cur=pace_param.URI_cur-pace_inter;
             else
@@ -530,7 +533,7 @@ switch pace_param.URI
                 end
                 % go back to Idle state, if a ventricular stimuli wasn't
                 % detected
-                if ~pace_param.v_sense
+                if ~pace_param.v_sense && ~pace_param.v_ref
                     pace_param.URI='off';
                 end    
             end  

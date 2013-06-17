@@ -10,15 +10,17 @@ Test 50 - PVC issue
 Test 53 -Atrial output, ven input
 %}
 %TODO: AS, VS, VR, AR arrows get printed twice. fix.
-%close all;
+close all;
 clear;
 clc;
-index = [1:29, 31:34, 36:39, 40:43, 45:55]; %[1:29, 31:34, 36:39];
+%[54]; % 61 63 65 66 68 69 72 74]; %
+%errors: 69, 71, 72, 75  
+index = 75 %[1:29, 31:34, 36:39, 40:43, 45:75]; %[1:29, 31:34, 36:39];
 try
 for i= 1:length(index)
 %% Decide what to plot
-plotSignals = 0;
-plotTimers = 0;
+plotSignals = 1;
+plotTimers = 1;
 breakEarly = 1;
 plotIteratively = 0;
 skipTo = 750; %if plotting iteratively, select how far you want to skip to.
@@ -39,9 +41,9 @@ message = 'Master, I have finished computing - mLab computer. Problems: ';
 badMessage = 'Master, something went wrong -mLab computer';
 
 %% Preallocation
-load Pacemaker_models/medtronic_params_v3
-load Medtronic_tests/medtronic_test_1-55
-pace_param = new_pace;
+load Pacemaker_models/medtronic_params_VRP_300
+load Medtronic_tests/medtronic_test_1-75
+pace_param = medtronic_param;
 number = index(i)
 fileName = strcat('test_File_', num2str(number));
 sample_File = eval(fileName);
@@ -130,6 +132,8 @@ switch number
         pace_param.sAVI_def = 200;
         pace_param.PVARP_def = 500;
         pace_param.PVARP_cur = 500;
+        pace_param.VRP_def = 500;
+        pace_param.VRP_cur = 500;
         pace_param.URI_cur = 750;
         pace_param.URI_def = 750;
         pace_param.LRI_cur = pace_param.LRI_def - pace_param.sAVI_def; 
@@ -411,8 +415,8 @@ while t< total_time
         case A_OUTPUT_V_INPUT
             atrial_output 
             ventricular_input
-            if pace_param.a_pace ==1
-            end      
+    %        if pace_param.a_pace ==1
+    %        end      
             if ifAOutput == 1
                 output_done = 1;
             end
@@ -427,18 +431,19 @@ while t< total_time
             end
         case V_OUTPUT_A_INPUT
             read_next;
-            %{
             ventricular_output
             atrial_input
             if ifVOutput == 1
                 output_done = 1;
             end
-            if outSignal == 1
+            if sendASignal == 1
                 input_done = 1;
             end
             if input_done && output_done
                 read_next;
                 ifBoundsPrinted = 0;
+                output_done = 0;
+                input_done = 0;
             end
            %}
         end
@@ -450,7 +455,7 @@ if breakEarly
                 set(gca,'Ylim',[-4,4],'Xlim',[0,t]);
                 subplot(2,1,2)
                 set(gca,'Ylim',[-4,4],'Xlim',[0,t]);
-            else
+            elseif plotSignals || plotTimers
                 set(gca,'Ylim',[-4,4],'Xlim',[0,t]);
             end
             break;
@@ -687,7 +692,7 @@ end
                   if plotSignals
                     subplot(2,1,2)
                   end
-                  if pace_param.PVARP_cur == pace_param.PVARP_extend_def-1 
+                  if pace_param.PVARP_cur == pace_param.PVARP_extend_def-1 && pace_param.PVARP_def < pace_param.PVARP_extend_def 
                       if pvarp_pvc_switch
                         width = (t-1) - pvarp_init;
                             if width > 0
@@ -722,7 +727,7 @@ end
                     subplot(2,1,2)
                 end
                 %if LRI was reset, or if a PVC was detected
-                if pace_param.LRI_cur == pace_param.LRI_def-2  || pace_param.PVARP_cur == pace_param.PVARP_extend_def-1  %t== 0 %(pace_param.v_pace || pace_param.v_sense || t == 0) && (strcmp(pace_param.PVARP, 'off') || pace_param.LRI_cur == pace_param.LRI_def)   
+                if pace_param.LRI_cur == pace_param.LRI_def-2  || (pace_param.PVARP_cur == pace_param.PVARP_extend_def-1 && pace_param.PVARP_def < pace_param.PVARP_extend_def)  %t== 0 %(pace_param.v_pace || pace_param.v_sense || t == 0) && (strcmp(pace_param.PVARP, 'off') || pace_param.LRI_cur == pace_param.LRI_def)   
                     if lri_flip == 0
                         lri_flip  = 1;   
                     else
@@ -810,8 +815,8 @@ end
         end
      %   pace_param.AF_interval
     end
-    %    pause(0.001);
-    %    la = [t, pace_param.VRP_cur, pace_param.LRI_cur]
+       pause(0.001);
+       la = [t, pace_param.PVARP_cur pace_param.VRP_cur, pace_param.LRI_cur]
     if doTest
         if sendASignal == 1
             pace_param = pacemaker_new(pace_param,1,0, pace_inter);
