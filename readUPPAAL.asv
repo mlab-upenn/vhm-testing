@@ -181,8 +181,6 @@ end
         locationStruct.name = nameCell;
         locationStruct.label = labelCell;
         
-        totalNames = 1;
-        totalLabels = 1;
         for l = 1:totalElements
             theElement = elements.item(l-1);
             elementName = char(theElement.getNodeName);
@@ -190,10 +188,10 @@ end
             switch elementName
                 case 'name'
                     locationStruct.name{totalNames} = makeNameStruct(theElement);
-                    totalNames = totalNames + 1;
+                    totalNames = totalNames - 1;
                 case 'label'
                     locationStruct.label{totalLabels} = makeLabelStruct(theElement);
-                    totalLabels = totalLabels + 1;
+                    totalLabels = totalLabels - 1;
             end
         end
     end
@@ -234,26 +232,22 @@ end
         transitionStruct.label = labelCell;
         transitionStruct.nail = nailCell;
         
-        totalSourceRef = 1;
-        totalTargetRef = 1;
-        totalLabels = 1;
-        totalNails = 1;
         for e = 1:totalElements
             theElement = elements.item(e-1);
             elementName = char(theElement.getNodeName);
             switch elementName
                 case 'source'
-                    transitionStruct.source{totalTargetRef} = char(theElement.getAttribute('ref'));
-                    totalSourceRef = totalSourceRef + 1;
+                    transitionStruct.source{totalTargetRef} = theElement.getAttribute('ref');
+                    totalSourceRef = totalSourceRef - 1;
                 case 'target'
-                    transitionStruct.target{totalTargetRef} = char(theElement.getAttribute('ref'));
-                    totalTargetRef = totalTargetRef + 1;
+                    transitionStruct.target{totalTargetRef} = theElement.getAttribute('ref');
+                    totalTargetRef = totalTargetRef - 1;
                 case 'label'
                     transitionStruct.label{totalLabels} = makeLabelStruct(theElement);
-                    totalLabels = totalLabels + 1;
+                    totalLabels = totalLabels - 1;
                 case 'nail'
-                    transitionStruct.nail{totalNails} = makeNailStruct(theElement);
-                    totalNails = totalNails + 1;
+                    transistionStruct.nail{totalNails} = makeNailStruct(theElement);
+                    totalNails = totalNails - 1;
             end
         end
     end
