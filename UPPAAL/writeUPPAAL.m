@@ -9,13 +9,10 @@ docNode.setXmlVersion('1.0');
 docNode.setXmlEncoding('utf-8');
 %commentNode = docNode.createComment();
 %docNode.appendChild(commentNode);
-totdec = length(struct.declaration);
-for d = 1:totdec
-    declaration_node = docNode.createElement('declaration');
-    declaration_node.setTextContent(struct.declaration{d});
-    docNode.getDocumentElement.appendChild(declaration_node);
-end
-
+declaration = struct.declaration;
+declaration_node = makeDeclarationNode(declaration);
+docNode.getDocumentElement.appendChild(declaration_node);
+    
 tottemps = length(struct.template);
 %name, parameter, declaration, location, init, transition
 for t = 1:tottemps
@@ -66,8 +63,7 @@ end
 
 totsys = length(struct.system);
 for S = 1:totsys
-    system_node = docNode.createElement('system');
-    system_node.setTextContent(struct.system{S});
+    system_node = makeSystemNode(struct.system(S));
     docNode.getDocumentElement.appendChild(system_node);
 end
 
@@ -84,12 +80,12 @@ end
         if ~isempty(name.x)
             nameNode.setAttribute('x', num2str(name.x));
         else
-            nameNode.setAttribute('x', 0);
+            nameNode.setAttribute('x', '0');
         end
         if ~isempty(name.y)
             nameNode.setAttribute('y', num2str(name.y));
         else
-            nameNode.setAttribute('y', 0);
+            nameNode.setAttribute('y', '0');
         end
         nameNode.setTextContent(name.text);
     end
@@ -97,17 +93,84 @@ end
     function parameterNode = makeParameterNode(parameter)
         parameterNode = docNode.createElement('parameter');
         if ~isempty(parameter)
-            parameterNode.setTextContent(parameter);
+            total = size(parameter);
+            total = total(1);
+            parameters = '';
+            for par = 1:total
+                parameters = [parameters,parameter{par,1},' ',parameter{par,2},parameter{par,3},', '];
+            end
+            parameters
+            parameterNode.setTextContent(parameters);
+            %parameterNode.setTextContent(parameter);
         end
     end
 
     function declarationNode = makeDeclarationNode(declaration)
         declarationNode = docNode.createElement('declaration');
         if ~isempty(declaration)
-            declarationNode.setTextContent(declaration);
+   %         declarationNode.setTextContent(declaration);
+            total = size(declaration);
+            total = total(1);
+            declarations = '';
+            for dec = 1:total
+                declarations = [declarations,declaration{dec,1},' ',addCommas(declaration{dec,2})];
+                if strcmp(declaration(dec,1),'clock')
+                    declarations = sprintf([declarations,';\n']);
+                else
+                    declarations = [declarations,'=',num2str(declaration{dec,3}),';'];
+                    declarations = sprintf([declarations,'\n']);
+                end
+            end
+            declarations
+            declarationNode.setTextContent(declarations);
+        end
+        function variable = addCommas(variables)
+            if iscell(variables)
+                var = '';
+                for y = 1:length(variables)-1
+                    var = [var,variables{y},','];
+                end
+                    var = [var,variables(end)];
+                    variable = var;
+            else
+                variable = variables;
+            end
         end
     end
-
+    
+    function systemNode = makeSystemNode(system)
+        systemNode = docNode.createElement('system');
+        process = system.process;
+        systems = system.system;
+        if ~isempty(system)
+            processes = sprintf('//processes\n');
+            for pro = 1:length(process)
+                processes = [processes,process(pro).name,'=',process(pro).function,'('];
+                arguments = '';
+                totalArgs = length(process(pro).arguments);
+                for arg = 1:totalArgs-1
+                    argument = process(pro).arguments{arg};
+                    arguments = [arguments,argument,','];
+                end
+                arguments = [arguments,process(pro).arguments{totalArgs}];
+                processes = sprintf([processes,arguments,');\n']);
+            end
+            systemText = sprintf('//systems\n');
+            for sys = 1:length(systems)
+                systemText = sprintf([systemText,'//',systems(sys).name,'\n']);
+                processText = '';
+                systemText = [systemText,'system '];
+                totalProcesses = length(systems(sys).processes);
+                for prt = 1: totalProcesses-1
+                    processText = [processText,systems(sys).processes{prt},','];
+                end
+                processText = [processText,systems(sys).processes{totalProcesses}];
+                systemText = sprintf([systemText,processText,';\n']);
+            end
+            systemNodeText = [processes,systemText];
+            systemNode.setTextContent(systemNodeText);
+        end
+    end
     function locationNode = makeLocationNode(location)
         locationNode = docNode.createElement('location');
         %names
@@ -134,13 +197,13 @@ end
         if ~isempty(location.y)
             locationNode.setAttribute('y', num2str(location.y));
         else
-            locationNode.setAttribute('y', 0);
+            locationNode.setAttribute('y', '0');
         end  
         %x
         if ~isempty(location.x)
             locationNode.setAttribute('x', num2str(location.x));
         else
-            locationNode.setAttribute('x', 0);
+            locationNode.setAttribute('x', '0');
         end
         %id
         if ~isempty(location.id)
@@ -187,12 +250,12 @@ end
         if ~isempty(label.y)
             labelNode.setAttribute('y', num2str(label.y));
         else
-            labelNode.setAttribute('y', 0);
+            labelNode.setAttribute('y', '0');
         end
         if ~isempty(label.x)
             labelNode.setAttribute('x', num2str(label.x));
         else
-            labelNode.setAttribute('x', 0);
+            labelNode.setAttribute('x', '0');
         end  
         if ~isempty(label.kind)
             labelNode.setAttribute('kind',label.kind);
@@ -217,12 +280,12 @@ end
         if ~isempty(nail.y)
             nailNode.setAttribute('y', num2str(nail.y));
         else
-            nailNode.setAttribute('y', 0);
+            nailNode.setAttribute('y', '0');
         end 
         if ~isempty(nail.x)
             nailNode.setAttribute('x', num2str(nail.x));
         else
-            nailNode.setAttribute('x', 0);
+            nailNode.setAttribute('x', '0');
         end
     end
 

@@ -121,10 +121,10 @@ end
                     templateStruct.name{totalNames} = makeNameStruct(theElement);
                     totalNames = totalNames + 1;
                 case 'parameter'
-                    templateStruct.parameter{totalParameters} = char(theElement.getTextContent);
+                    templateStruct.parameter{totalParameters} = makeParameterCell(char(theElement.getTextContent));
                     totalParameters = totalParameters + 1;
                 case 'declaration'
-                    templateStruct.declaration{totalDeclarations} = char(theElement.getTextContent);
+                    templateStruct.declaration{totalDeclarations} = makeDeclarationCell(char(theElement.getTextContent));
                     totalDeclarations = totalDeclarations + 1;
                 case 'location'
                     templateStruct.location{totalLocations} = makeLocationStruct(theElement);
@@ -186,23 +186,30 @@ end
                     variables{1} = line(1:strfind(line,';')-1);
                 end
                 for v = 1:length(variables)
-                    value = strsplit(variables{v},' ');
+                    value = strsplit_re(variables{v},'\s+');
                     variableType = value{1};
-                    theRest = value(2:end);
+                    switch variableType
+                        case {'broadcast','meta','urgent','const'}
+                            variableType = [value{1},' ',value{2}];
+                            theRest = strcat(value{3:end});
+                        otherwise
+                            theRest = strcat(value{2:end});
+                    end
                     name = '';
                     value = 0;
+                    %TODO:Take multiple different variabletypes into
+                    %account
                     switch variableType
-                        case {'int', 'bool'}
-                            values = findNameAndValue(theRest{1});
+                        case {'int', 'bool','meta int','meta bool','const int','const bool'}
+                            values = findNameAndValue(theRest);
                             name = values{1};
                             value = values{2};
-                        case 'clock'
-                            name = theRest{1};
-                        case 'broadcast chan'
-                        case 'chan'
-                        case 'urgent chan'
-                        case 'const int'
-                        case 'const bool' %boolean can also be declared false and true
+                        case {'clock','broadcast chan','chan','urgent chan'}
+                            name = theRest;
+                            names = strsplit(name,',');
+                            if length(names)> 1
+                                name = names;
+                            end
                     end
                     declarationCell(d,:) = {variableType, name, value};
                     d = d+1;
@@ -215,10 +222,30 @@ end
             theRest = theRest(~isspace(theRest));
             theRest = strsplit(theRest,'=');
             variable = theRest{1};
-            number = str2num(theRest{2});
+            number = 0;
+            if length(theRest) > 1
+                number = theRest{2};
+            end
+            isDigit = sum(isstrprop(number,'digit'))/length(number);
+                if isDigit == 1
+                    number = str2num(number);
+                else
+                    switch number
+                        case 'false'
+                            number = 0;
+                        case 'true'
+                            number = 1;
+                        otherwise
+                            number = 0;
+                    end
+                end
+            vars = strsplit(variable,',');
+            if length(vars) > 1
+                variable = vars;
+            end
             values = {variable, number};
         end
-    end 
+    end
 
 
     function systemStruct = makeSystemStruct(system)
@@ -255,6 +282,7 @@ end
         systemStruct = struct('process',cell(1),...
                               'system',cell(1));
         process = struct('name',cell(1),...
+                         'function',cell(1),...
                            'arguments',cell(1)); %struct with name of process, and input arguments
         systemStruct.system = system;
         system = struct('name',cell(1),...
@@ -277,13 +305,15 @@ end
                             line = line(1:strfind(line,';')-1);
                             line = line(~isspace(line));
                             line = strsplit(line,'=');
-                            processName = line{1}
+                            processName = line{1};
                             theRest = line{2};
                             theRest = strsplit(theRest,'(');
+                            funct = theRest{1};
                             theRest = theRest{2};
                             theRest = theRest(1:strfind(theRest,')')-1);
                             arguments = strsplit(theRest,',');
                             process(p).name = processName;
+                            process(p).function = funct;
                             process(p).arguments = arguments;
                             p = p+1;
                         elseif length(strfind(line{m},'system ')) >=1
@@ -300,13 +330,15 @@ end
                         line = line(1:strfind(line,';')-1);
                         line = line(~isspace(line));
                         line = strsplit(line,'=');
-                        processName = line{1}
+                        processName = line{1};
                         theRest = line{2};
                         theRest = strsplit(theRest,'(');
+                        funct = theRest{1};
                         theRest = theRest{2};
                         theRest = theRest(1:strfind(theRest,')')-1);
                         arguments = strsplit(theRest,',');
                         process(p).name = processName;
+                        process(p).function = funct;
                         process(p).arguments = arguments;
                         p = p+1;
                     elseif length(strfind(line,'system ')) >=1
@@ -322,14 +354,35 @@ end
         end
         systemStruct.process = process;
         systemStruct.system = system;
-        %systemCell = system;
     end
-
-
-
-
-
-
+%TODO:Add a parameter cell function
+    function parameterCell = makeParameterCell(parameter)
+        splitParams = strsplit(parameter,',');
+        %preallocate parameterCell
+        parameterCell = cell(length(splitParams),3);
+        for p = 1:length(splitParams)
+            param = splitParams{p};
+            param = strsplit_re(param,'\s+');
+            variable = param{length(param)};
+            variableType = param(1:end-1);
+            pointOrMem = '';
+            %if a memory address
+            if length(strfind(variable,'&')) >= 1
+                pointOrMem = '&';
+                variable = variable(strfind(variable,'&')+1:end);
+            end
+            if length(variableType) > 1
+                varType = '';
+                for v = 1:length(variableType)-1
+                    varType = [varType, variableType{v}, ' '];
+                end
+                varType = [varType, variableType{length(variableType)}];
+            else
+                varType = variableType{1};
+            end
+            parameterCell(p,:) = {varType, pointOrMem, variable};
+        end
+    end
     function locationStruct = makeLocationStruct(location)
         elements =location.getChildNodes;
         totalElements = elements.getLength;

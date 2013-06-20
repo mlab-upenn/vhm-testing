@@ -105,6 +105,8 @@ Pinitializer=initializer(INTR,Aget,Vget);
 //////Basic DDD 
 // RHM without conduction 
 //system PAVI,PLRI,PPVARP,PVRP,PURI,PURI_test,Pvv,PV,PA; 
+
+// RHM without conduction 
 system PAVI,PLRI,PPVARP,PVRP,PURI,PV,PA,Pinitializer; 
 // RHM with conduction 
 //system PAVI,PLRI,PPVARP,PVRP,PURI,PV,PA,Pcond,PURI_test,Pvv;   
