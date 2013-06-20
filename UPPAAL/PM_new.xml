@@ -2,9 +2,9 @@
 clock A_clk;
 clock V_clk;
 
-int PAAB=50;
-int PAARP=150;
-int PAVB=50;
+int PAAB =50;
+int PAARP = 150;
+int PAVB= 50;
 
 int PVAB=50;
 int PVARP=300;

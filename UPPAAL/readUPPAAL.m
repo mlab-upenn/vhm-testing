@@ -28,25 +28,14 @@ end
                 theElement = childNodes.item(count-1);
                 elementName = char(theElement.getNodeName);
                 switch elementName
-                    case 'declaration'
-                        totDec = totDec + 1;
                     case 'template'
                         totTemp = totTemp + 1;
-                    case 'system'
-                        totSys = totSys + 1;
                 end
             end
-            theStruct = struct('declaration',cell(1),...
-                               'template',cell(1),...
-                               'system',cell(1));
-                           
-            declarationCell = cell(1,totDec);
+            theStruct = struct('template',cell(1));
+                                                           
             templateCell = cell(1,totTemp);
-            systemCell = cell(1,totSys);
-            
-            theStruct.declaration = declarationCell;
             theStruct.template = templateCell;
-            theStruct.system = systemCell;
             
             totDec = 1;
             totTemp = 1;
@@ -59,10 +48,10 @@ end
                         theStruct.template{totTemp} = makeStructFromTemplate(theChild);
                         totTemp = totTemp + 1;
                     case 'system'
-                        theStruct.system{totSys} = char(theChild.getTextContent);
+                        theStruct.system = makeSystemStruct(char(theChild.getTextContent)); %char(theChild.getTextContent);
                         totSys = totSys + 1;
                     case 'declaration'
-                        theStruct.declaration{totDec} = char(theChild.getTextContent);
+                        theStruct.declaration = makeDeclarationCell(char(theChild.getTextContent)); % char(theChild.getTextContent);
                         totDec = totDec + 1;
                end
             end
@@ -149,7 +138,198 @@ end
             end
         end
     end
-    
+
+
+%% SubFunctions
+    %type, name, value
+    %TODO: deal with these cases:
+    %           int[0,1]
+    %           int/bool a, b[2][2];
+    %           int b[2][2] = {{1,2,3},{4,5,6}};
+    %           int b[5];
+    %           urgent chan a, b[2];
+    %           broadcast chan c;
+    %           const k[3]{1,2,3};
+    %           meta int/bool/arrays
+    function declarationCell = makeDeclarationCell(declaration)
+        %first separate by line
+        splitLines = strsplit_re(declaration,'\n');
+        %count number of variables to store to preallocate declarationCell
+        semicolons = 0;
+        for l = 1:length(splitLines)
+            line = splitLines{l};
+            %if the line wasn't commented out
+            if isempty(strfind(line,'//'))
+                stuff =  strfind(line,';');
+                semicolons = semicolons + length(strfind(line,';'));
+            end
+        end
+        
+        %preallocate declarationCell
+        declarationCell = cell(semicolons,3);
+        %counter
+        d = 1;
+        for l = 1:length(splitLines)
+            line = splitLines{l};
+            purewhiteSpace = sum(isspace(line))/length(line);
+            if strcmp(line,'') || isempty(line) || purewhiteSpace == 1
+                continue
+            end
+            %if the line wasn't commented out
+            if isempty(strfind(line,'//'))
+                %if more than one variable is on this line
+                if length(strfind(line,';')) > 1
+                    variables = strsplit(line,';');
+                    variables = variables(1,1:end-1);   
+                else
+                    variables = cell(1,1);
+                    variables{1} = line(1:strfind(line,';')-1);
+                end
+                for v = 1:length(variables)
+                    value = strsplit(variables{v},' ');
+                    variableType = value{1};
+                    theRest = value(2:end);
+                    name = '';
+                    value = 0;
+                    switch variableType
+                        case {'int', 'bool'}
+                            values = findNameAndValue(theRest{1});
+                            name = values{1};
+                            value = values{2};
+                        case 'clock'
+                            name = theRest{1};
+                        case 'broadcast chan'
+                        case 'chan'
+                        case 'urgent chan'
+                        case 'const int'
+                        case 'const bool' %boolean can also be declared false and true
+                    end
+                    declarationCell(d,:) = {variableType, name, value};
+                    d = d+1;
+                end
+                
+            end
+        end
+        function values = findNameAndValue(theRest)
+            %remove whitespace
+            theRest = theRest(~isspace(theRest));
+            theRest = strsplit(theRest,'=');
+            variable = theRest{1};
+            number = str2num(theRest{2});
+            values = {variable, number};
+        end
+    end 
+
+
+    function systemStruct = makeSystemStruct(system)
+        %first separate by line
+        splitLines = strsplit_re(system,'\n');
+        %count number of variables to store to preallocate systemStruct and
+        %cells
+        totSys = 0;
+        totProc = 0;
+        for l = 1:length(splitLines)
+            line = splitLines{l};
+            %if the line wasn't commented out
+            if isempty(strfind(line,'//'))
+                if length(strfind(line,';')) > 1
+                    line = strsplit(line,';');
+                    line = line(1:end-1);
+                    for m = 1:length(line)
+                        if length(strfind(line{m},'=')) >= 1
+                            totProc = totProc + 1;
+                        elseif length(strfind(line{m},'system ')) >=1
+                            totSys = totSys + 1;
+                        end
+                    end
+                else
+                    if length(strfind(line,'=')) >= 1
+                        totProc = totProc + 1;
+                    elseif length(strfind(line,'system ')) >=1
+                        totSys = totSys + 1;
+                    end
+                end
+            end
+        end
+        %preallocate struct and cells
+        systemStruct = struct('process',cell(1),...
+                              'system',cell(1));
+        process = struct('name',cell(1),...
+                           'arguments',cell(1)); %struct with name of process, and input arguments
+        systemStruct.system = system;
+        system = struct('name',cell(1),...
+                        'processes',cell(1));
+        s = 1;
+        p = 1;
+        for l = 1:length(splitLines)
+            line = splitLines{l};
+            purewhiteSpace = sum(isspace(line))/length(line);
+            if strcmp(line,'') || isempty(line) || purewhiteSpace == 1
+                continue
+            end
+            %if the line wasn't commented out
+            if isempty(strfind(line,'//'))
+                if length(strfind(line,';')) > 1
+                    line = strsplit(line,';');
+                    line = line(1:end-1);
+                    for m = 1:length(line)
+                        if length(strfind(line{m},'=')) >= 1
+                            line = line(1:strfind(line,';')-1);
+                            line = line(~isspace(line));
+                            line = strsplit(line,'=');
+                            processName = line{1}
+                            theRest = line{2};
+                            theRest = strsplit(theRest,'(');
+                            theRest = theRest{2};
+                            theRest = theRest(1:strfind(theRest,')')-1);
+                            arguments = strsplit(theRest,',');
+                            process(p).name = processName;
+                            process(p).arguments = arguments;
+                            p = p+1;
+                        elseif length(strfind(line{m},'system ')) >=1
+                            line = line(1:strfind(line,';')-1);
+                            line = strsplit(line,' ');
+                            line = [line{2:end}];
+                            processes = strsplit(line,',');
+                            system(s).processes = processes;
+                            s = s+1;
+                        end
+                    end
+                else
+                    if length(strfind(line,'=')) >= 1
+                        line = line(1:strfind(line,';')-1);
+                        line = line(~isspace(line));
+                        line = strsplit(line,'=');
+                        processName = line{1}
+                        theRest = line{2};
+                        theRest = strsplit(theRest,'(');
+                        theRest = theRest{2};
+                        theRest = theRest(1:strfind(theRest,')')-1);
+                        arguments = strsplit(theRest,',');
+                        process(p).name = processName;
+                        process(p).arguments = arguments;
+                        p = p+1;
+                    elseif length(strfind(line,'system ')) >=1
+                        line = line(1:strfind(line,';')-1);
+                        line = strsplit(line,' ');
+                        line = [line{2:end}];
+                        processes = strsplit(line,',');
+                        system(s).processes = processes;
+                        s = s+1;
+                    end
+                end
+            end          
+        end
+        systemStruct.process = process;
+        systemStruct.system = system;
+        %systemCell = system;
+    end
+
+
+
+
+
+
     function locationStruct = makeLocationStruct(location)
         elements =location.getChildNodes;
         totalElements = elements.getLength;
