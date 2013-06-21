@@ -398,7 +398,6 @@ end
             alloc = theRest{2};
             alloc = alloc(~isspace(alloc));
             value = eval(alloc);
-            value = value';
         end
         array = {name, value};
     end

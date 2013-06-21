@@ -96,15 +96,15 @@ end
             total = size(parameter);
             total = total(1);
             parameters = '';
-            for par = 1:total
-                parameters = [parameters,parameter{par,1},' ',parameter{par,2},parameter{par,3},', '];
+            for par = 1:total-1
+                parameters = [parameters,parameter{par,1},' ',parameter{par,2},parameter{par,3},','];
             end
-            parameters
+                parameters =[parameters,parameter{end,1},' ',parameter{end,2},parameter{end,3}];
             parameterNode.setTextContent(parameters);
             %parameterNode.setTextContent(parameter);
         end
     end
-
+    %TODO: deal with values containing arrays
     function declarationNode = makeDeclarationNode(declaration)
         declarationNode = docNode.createElement('declaration');
         if ~isempty(declaration)
@@ -121,28 +121,27 @@ end
                     declarations = sprintf([declarations,'\n']);
                 end
             end
-            declarations
             declarationNode.setTextContent(declarations);
-        end
-        function variable = addCommas(variables)
-            if iscell(variables)
-                var = '';
-                for y = 1:length(variables)-1
-                    var = [var,variables{y},','];
-                end
-                    var = [var,variables(end)];
-                    variable = var;
-            else
-                variable = variables;
-            end
         end
     end
     
     function systemNode = makeSystemNode(system)
         systemNode = docNode.createElement('system');
+        variable = system.variables;
         process = system.process;
         systems = system.system;
         if ~isempty(system)
+            variableText = sprintf('//variables\n');
+            for var = 1:size(variable,1)
+                variableText = [variableText,variable{var,1},' ',addCommas(variable{var,2})];
+                if strcmp(variable(var,1),'clock') || iscell(variable{var,2})
+                    variableText
+                    variableText = sprintf([variableText,';\n']);
+                else
+                    variableText = [variableText,'=',num2str(variable{var,3}),';'];
+                    variableText = sprintf([variableText,'\n']);
+                end
+            end
             processes = sprintf('//processes\n');
             for pro = 1:length(process)
                 processes = [processes,process(pro).name,'=',process(pro).function,'('];
@@ -167,10 +166,26 @@ end
                 processText = [processText,systems(sys).processes{totalProcesses}];
                 systemText = sprintf([systemText,processText,';\n']);
             end
-            systemNodeText = [processes,systemText];
+            systemNodeText = [variableText,processes,systemText];
             systemNode.setTextContent(systemNodeText);
         end
     end
+
+    function variable = addCommas(variables)
+            if iscell(variables)
+                var = '';
+                for y = 1:length(variables)-1
+                    var = [var,variables{y},','];
+                end
+                    var = [var,variables{end}];
+                    variable = var;
+            else
+                variable = variables;
+            end
+    end
+    function value = getValues(values)
+    end
+
     function locationNode = makeLocationNode(location)
         locationNode = docNode.createElement('location');
         %names
