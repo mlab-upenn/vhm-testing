@@ -1,0 +1,800 @@
+layout
+#index:const:value
+#index:clock:nr:name
+#index:var:min:max:init:nr:name
+#index:meta:min:max:init:nr:name
+#index:cost
+#index:location:flags:name
+#index:static:min:max:name
+0:clock:0:t(0)
+1:const:1
+2:const:2
+3:const:3
+4:const:4
+5:const:5
+6:const:6
+7:const:7
+8:const:8
+9:const:9
+10:clock:1:A_clk
+11:clock:2:V_clk
+12:var:-32767:32767:50:0:PAAB
+13:var:-32767:32767:150:1:PAARP
+14:var:-32767:32767:50:2:PAVB
+15:var:-32767:32767:50:3:PVAB
+16:var:-32767:32767:300:4:PVARP
+17:var:-32767:32767:50:5:PVVB
+18:var:-32767:32767:200:6:PVVRP
+19:var:-32767:32767:100:7:VSP_thresh
+20:var:-32767:32767:300:8:TPVARP_def
+21:var:-32767:32767:300:9:TPVARP
+22:var:-32767:32767:150:10:TAVI
+23:var:-32767:32767:400:11:TURI
+24:var:-32767:32767:1000:12:TLRI
+25:var:-32767:32767:200:13:Amin
+26:var:-32767:32767:1000:14:Amax
+27:var:-32767:32767:200:15:Vmin
+28:var:-32767:32767:1000:16:Vmax
+29:const:2
+30:const:3
+31:location::timer
+32:const:6
+33:const:7
+34:location::V_timer
+35:const:1
+36:const:2
+37:const:3
+38:const:4
+39:location:committed:_id2
+40:location::Idle
+41:const:5
+42:const:6
+43:const:7
+44:const:8
+45:const:9
+46:location:committed:_id4
+47:location::Init
+48:const:9
+49:const:7
+50:location::VSP_ready
+51:location::Idle
+52:const:3
+53:location::Init
+54:const:1
+55:const:3
+56:clock:3:PA.t
+57:location::H
+58:const:5
+59:const:7
+60:clock:4:PV.t
+61:location::H
+
+instructions
+#address: opcode
+0: 0 1 			push 1
+2: 33 			halt
+3: 0 0 			push 0
+5: 33 			halt
+6: 0 1 			push 1
+8: 33 			halt
+9: 0 1 			push 1
+11: 33 			halt
+12: 0 1 		push 1
+14: 33 			halt
+15: 0 10 		push 10
+17: 0 0 		push 0
+19: 19 			store
+20: 33 			halt
+21: 0 -3 		push -3
+23: 33 			halt
+24: 0 1 		push 1
+26: 33 			halt
+27: 0 1 		push 1
+29: 33 			halt
+30: 0 10 		push 10
+32: 0 0 		push 0
+34: 19 			store
+35: 33 			halt
+36: 0 -2 		push -2
+38: 33 			halt
+39: 0 1 		push 1
+41: 33 			halt
+42: 0 0 		push 0
+44: 33 			halt
+45: 0 1 		push 1
+47: 33 			halt
+48: 0 1 		push 1
+50: 33 			halt
+51: 0 1 		push 1
+53: 33 			halt
+54: 0 11 		push 11
+56: 0 0 		push 0
+58: 19 			store
+59: 33 			halt
+60: 0 -7 		push -7
+62: 33 			halt
+63: 0 1 		push 1
+65: 33 			halt
+66: 0 1 		push 1
+68: 33 			halt
+69: 0 11 		push 11
+71: 0 0 		push 0
+73: 19 			store
+74: 33 			halt
+75: 0 -6 		push -6
+77: 33 			halt
+78: 0 1 		push 1
+80: 33 			halt
+81: 0 0 		push 0
+83: 33 			halt
+84: 0 1 		push 1
+86: 33 			halt
+87: 0 1 		push 1
+89: 33 			halt
+90: 0 0 		push 0
+92: 33 			halt
+93: 0 1 		push 1
+95: 33 			halt
+96: 0 2 		push 2
+98: 0 0 		push 0
+100: 3 15 		lid 15
+102: 29 0 		cexpr 0
+104: 33 		halt
+105: 0 2 		push 2
+107: 33 		halt
+108: 0 0 		push 0
+110: 33 		halt
+111: 3 15 		lid 15
+113: 33 		halt
+114: 0 1 		push 1
+116: 33 		halt
+117: 0 0 		push 0
+119: 33 		halt
+120: 0 1 		push 1
+122: 0 0 		push 0
+124: 3 12 		lid 12
+126: 29 0 		cexpr 0
+128: 33 		halt
+129: 0 1 		push 1
+131: 33 		halt
+132: 0 0 		push 0
+134: 33 		halt
+135: 3 12 		lid 12
+137: 33 		halt
+138: 0 1 		push 1
+140: 33 		halt
+141: 0 0 		push 0
+143: 33 		halt
+144: 0 0 		push 0
+146: 0 2 		push 2
+148: 3 15 		lid 15
+150: 24 		uminus
+151: 29 0 		cexpr 0
+153: 26 		copy
+154: 32 165 		jmpz 165
+156: 0 2 		push 2
+158: 0 0 		push 0
+160: 3 16 		lid 16
+162: 29 0 		cexpr 0
+164: 13 		and
+165: 33 		halt
+166: 0 2 		push 2
+168: 33 		halt
+169: 0 0 		push 0
+171: 33 		halt
+172: 3 16 		lid 16
+174: 33 		halt
+175: 0 2 		push 2
+177: 33 		halt
+178: 0 0 		push 0
+180: 33 		halt
+181: 3 15 		lid 15
+183: 33 		halt
+184: 0 1 		push 1
+186: 33 		halt
+187: 0 4 		push 4
+189: 33 		halt
+190: 0 0 		push 0
+192: 0 1 		push 1
+194: 3 12 		lid 12
+196: 24 		uminus
+197: 29 0 		cexpr 0
+199: 26 		copy
+200: 32 211 		jmpz 211
+202: 0 1 		push 1
+204: 0 0 		push 0
+206: 3 13 		lid 13
+208: 29 0 		cexpr 0
+210: 13 		and
+211: 33 		halt
+212: 0 1 		push 1
+214: 33 		halt
+215: 0 0 		push 0
+217: 33 		halt
+218: 3 13 		lid 13
+220: 33 		halt
+221: 0 1 		push 1
+223: 33 		halt
+224: 0 0 		push 0
+226: 33 		halt
+227: 3 12 		lid 12
+229: 33 		halt
+230: 0 1 		push 1
+232: 33 		halt
+233: 0 4 		push 4
+235: 33 		halt
+236: 0 0 		push 0
+238: 0 1 		push 1
+240: 3 13 		lid 13
+242: 24 		uminus
+243: 29 0 		cexpr 0
+245: 26 		copy
+246: 32 258 		jmpz 258
+248: 0 0 		push 0
+250: 0 2 		push 2
+252: 3 16 		lid 16
+254: 24 		uminus
+255: 29 0 		cexpr 0
+257: 13 		and
+258: 33 		halt
+259: 0 2 		push 2
+261: 33 		halt
+262: 0 0 		push 0
+264: 33 		halt
+265: 3 16 		lid 16
+267: 33 		halt
+268: 0 1 		push 1
+270: 33 		halt
+271: 0 0 		push 0
+273: 33 		halt
+274: 3 13 		lid 13
+276: 33 		halt
+277: 0 1 		push 1
+279: 33 		halt
+280: 0 2 		push 2
+282: 33 		halt
+283: 0 1 		push 1
+285: 33 		halt
+286: 0 1 		push 1
+288: 33 		halt
+289: 0 1 		push 1
+291: 33 		halt
+292: 0 -1 		push -1
+294: 33 		halt
+295: 0 1 		push 1
+297: 33 		halt
+298: 0 0 		push 0
+300: 33 		halt
+301: 0 1 		push 1
+303: 33 		halt
+304: 0 1 		push 1
+306: 33 		halt
+307: 0 0 		push 0
+309: 33 		halt
+310: 0 1 		push 1
+312: 33 		halt
+313: 0 2 		push 2
+315: 0 0 		push 0
+317: 3 17 		lid 17
+319: 29 0 		cexpr 0
+321: 33 		halt
+322: 0 2 		push 2
+324: 33 		halt
+325: 0 0 		push 0
+327: 33 		halt
+328: 3 17 		lid 17
+330: 33 		halt
+331: 0 1 		push 1
+333: 33 		halt
+334: 0 0 		push 0
+336: 33 		halt
+337: 0 0 		push 0
+339: 0 2 		push 2
+341: 3 17 		lid 17
+343: 24 		uminus
+344: 29 0 		cexpr 0
+346: 26 		copy
+347: 32 358 		jmpz 358
+349: 0 2 		push 2
+351: 0 0 		push 0
+353: 3 19 		lid 19
+355: 29 0 		cexpr 0
+357: 13 		and
+358: 33 		halt
+359: 0 2 		push 2
+361: 33 		halt
+362: 0 0 		push 0
+364: 33 		halt
+365: 3 19 		lid 19
+367: 33 		halt
+368: 0 2 		push 2
+370: 33 		halt
+371: 0 0 		push 0
+373: 33 		halt
+374: 3 17 		lid 17
+376: 33 		halt
+377: 0 1 		push 1
+379: 33 		halt
+380: 0 9 		push 9
+382: 33 		halt
+383: 0 1 		push 1
+385: 0 0 		push 0
+387: 3 14 		lid 14
+389: 29 0 		cexpr 0
+391: 33 		halt
+392: 0 1 		push 1
+394: 33 		halt
+395: 0 0 		push 0
+397: 33 		halt
+398: 3 14 		lid 14
+400: 33 		halt
+401: 0 1 		push 1
+403: 33 		halt
+404: 0 0 		push 0
+406: 33 		halt
+407: 0 0 		push 0
+409: 0 2 		push 2
+411: 3 19 		lid 19
+413: 24 		uminus
+414: 29 0 		cexpr 0
+416: 26 		copy
+417: 32 428 		jmpz 428
+419: 0 2 		push 2
+421: 0 0 		push 0
+423: 3 18 		lid 18
+425: 29 0 		cexpr 0
+427: 13 		and
+428: 33 		halt
+429: 0 2 		push 2
+431: 33 		halt
+432: 0 0 		push 0
+434: 33 		halt
+435: 3 18 		lid 18
+437: 33 		halt
+438: 0 2 		push 2
+440: 33 		halt
+441: 0 0 		push 0
+443: 33 		halt
+444: 3 19 		lid 19
+446: 33 		halt
+447: 0 21 		push 21
+449: 0 400 		push 400
+451: 19 		store
+452: 33 		halt
+453: 0 8 		push 8
+455: 33 		halt
+456: 0 0 		push 0
+458: 0 1 		push 1
+460: 3 14 		lid 14
+462: 24 		uminus
+463: 29 0 		cexpr 0
+465: 26 		copy
+466: 32 478 		jmpz 478
+468: 0 0 		push 0
+470: 0 2 		push 2
+472: 3 18 		lid 18
+474: 24 		uminus
+475: 29 0 		cexpr 0
+477: 13 		and
+478: 33 		halt
+479: 0 2 		push 2
+481: 33 		halt
+482: 0 0 		push 0
+484: 33 		halt
+485: 3 18 		lid 18
+487: 33 		halt
+488: 0 1 		push 1
+490: 33 		halt
+491: 0 0 		push 0
+493: 33 		halt
+494: 3 14 		lid 14
+496: 33 		halt
+497: 0 21 		push 21
+499: 3 20 		lid 20
+501: 19 		store
+502: 33 		halt
+503: 0 6 		push 6
+505: 33 		halt
+506: 0 1 		push 1
+508: 33 		halt
+509: 0 1 		push 1
+511: 33 		halt
+512: 0 1 		push 1
+514: 33 		halt
+515: 0 -5 		push -5
+517: 33 		halt
+518: 0 1 		push 1
+520: 33 		halt
+521: 0 0 		push 0
+523: 33 		halt
+524: 0 1 		push 1
+526: 33 		halt
+527: 0 1 		push 1
+529: 33 		halt
+530: 0 0 		push 0
+532: 33 		halt
+533: 0 1 		push 1
+535: 33 		halt
+536: 0 0 		push 0
+538: 0 1 		push 1
+540: 0 -110 		push -110
+542: 29 0 		cexpr 0
+544: 33 		halt
+545: 0 1 		push 1
+547: 33 		halt
+548: 0 0 		push 0
+550: 33 		halt
+551: 0 110 		push 110
+553: 33 		halt
+554: 0 1 		push 1
+556: 33 		halt
+557: 0 7 		push 7
+559: 33 		halt
+560: 0 0 		push 0
+562: 0 1 		push 1
+564: 3 22 		lid 22
+566: 24 		uminus
+567: 29 0 		cexpr 0
+569: 26 		copy
+570: 32 582 		jmpz 582
+572: 0 0 		push 0
+574: 0 2 		push 2
+576: 3 23 		lid 23
+578: 24 		uminus
+579: 29 0 		cexpr 0
+581: 13 		and
+582: 33 		halt
+583: 0 2 		push 2
+585: 33 		halt
+586: 0 0 		push 0
+588: 33 		halt
+589: 3 23 		lid 23
+591: 33 		halt
+592: 0 1 		push 1
+594: 33 		halt
+595: 0 0 		push 0
+597: 33 		halt
+598: 3 22 		lid 22
+600: 33 		halt
+601: 0 1 		push 1
+603: 33 		halt
+604: 0 7 		push 7
+606: 33 		halt
+607: 0 1 		push 1
+609: 33 		halt
+610: 0 1 		push 1
+612: 33 		halt
+613: 0 1 		push 1
+615: 33 		halt
+616: 0 -9 		push -9
+618: 33 		halt
+619: 0 1 		push 1
+621: 33 		halt
+622: 0 0 		push 0
+624: 33 		halt
+625: 0 1 		push 1
+627: 33 		halt
+628: 0 0 		push 0
+630: 0 2 		push 2
+632: 3 24 		lid 24
+634: 3 22 		lid 22
+636: 24 		uminus
+637: 4 			plus
+638: 24 		uminus
+639: 29 0 		cexpr 0
+641: 26 		copy
+642: 32 654 		jmpz 654
+644: 0 0 		push 0
+646: 0 1 		push 1
+648: 3 24 		lid 24
+650: 24 		uminus
+651: 29 0 		cexpr 0
+653: 13 		and
+654: 33 		halt
+655: 0 1 		push 1
+657: 33 		halt
+658: 0 0 		push 0
+660: 33 		halt
+661: 3 24 		lid 24
+663: 33 		halt
+664: 0 2 		push 2
+666: 33 		halt
+667: 0 0 		push 0
+669: 33 		halt
+670: 3 24 		lid 24
+672: 3 22 		lid 22
+674: 24 		uminus
+675: 4 			plus
+676: 33 		halt
+677: 0 1 		push 1
+679: 33 		halt
+680: 0 3 		push 3
+682: 33 		halt
+683: 0 3 		push 3
+685: 33 		halt
+686: 0 0 		push 0
+688: 33 		halt
+689: 3 26 		lid 26
+691: 33 		halt
+692: 0 0 		push 0
+694: 33 		halt
+695: 0 3 		push 3
+697: 0 0 		push 0
+699: 3 26 		lid 26
+701: 29 0 		cexpr 0
+703: 33 		halt
+704: 0 1 		push 1
+706: 33 		halt
+707: 0 1 		push 1
+709: 33 		halt
+710: 0 56 		push 56
+712: 0 0 		push 0
+714: 19 		store
+715: 33 		halt
+716: 0 -3 		push -3
+718: 33 		halt
+719: 0 0 		push 0
+721: 0 3 		push 3
+723: 3 25 		lid 25
+725: 24 		uminus
+726: 29 0 		cexpr 0
+728: 33 		halt
+729: 0 3 		push 3
+731: 33 		halt
+732: 0 0 		push 0
+734: 33 		halt
+735: 3 25 		lid 25
+737: 33 		halt
+738: 0 56 		push 56
+740: 0 0 		push 0
+742: 19 		store
+743: 33 		halt
+744: 0 1 		push 1
+746: 33 		halt
+747: 0 4 		push 4
+749: 33 		halt
+750: 0 0 		push 0
+752: 33 		halt
+753: 3 28 		lid 28
+755: 33 		halt
+756: 0 0 		push 0
+758: 33 		halt
+759: 0 4 		push 4
+761: 0 0 		push 0
+763: 3 28 		lid 28
+765: 29 0 		cexpr 0
+767: 33 		halt
+768: 0 1 		push 1
+770: 33 		halt
+771: 0 1 		push 1
+773: 33 		halt
+774: 0 60 		push 60
+776: 0 0 		push 0
+778: 19 		store
+779: 33 		halt
+780: 0 -7 		push -7
+782: 33 		halt
+783: 0 0 		push 0
+785: 0 4 		push 4
+787: 3 27 		lid 27
+789: 24 		uminus
+790: 29 0 		cexpr 0
+792: 33 		halt
+793: 0 4 		push 4
+795: 33 		halt
+796: 0 0 		push 0
+798: 33 		halt
+799: 3 27 		lid 27
+801: 33 		halt
+802: 0 60 		push 60
+804: 0 0 		push 0
+806: 19 		store
+807: 33 		halt
+808: 0 5 		push 5
+810: 33 		halt
+
+processes
+#index:initial:name
+0:31:PA_timer
+1:34:PV_timer
+2:40:PA_filter
+3:47:PV_filter
+4:51:PVP_gen
+5:53:PAP_gen
+6:57:PA
+7:61:PV
+
+locations
+#index:process:invariant
+31:0:6
+34:1:45
+39:2:84
+40:2:93
+46:3:301
+47:3:310
+50:4:524
+51:4:533
+53:5:625
+57:6:695
+61:7:759
+
+edges
+#process:source:target:guard:sync:update
+0:31:31:9:21:15
+0:31:31:24:36:30
+1:34:34:48:60:54
+1:34:34:63:75:69
+2:39:40:96:117:114
+2:39:40:120:141:138
+2:39:40:144:187:184
+2:39:40:190:233:230
+2:39:40:236:280:277
+2:40:39:283:292:289
+3:46:47:313:334:331
+3:46:47:337:380:377
+3:46:47:383:404:401
+3:46:47:407:453:447
+3:46:47:456:503:497
+3:47:46:506:515:512
+4:50:51:536:557:554
+4:51:51:560:604:601
+4:51:50:607:616:613
+5:53:53:628:680:677
+6:57:57:704:716:710
+6:57:57:719:744:738
+7:61:61:768:780:774
+7:61:61:783:808:802
+
+expressions
+#address:reads:writes:text
+0:::1
+6:::1
+9:::1
+12:::1
+15::10:A_clk = 0
+21:::AP?
+24:::1
+27:::1
+30::10:A_clk = 0
+36:::AS?
+39:::1
+45:::1
+48:::1
+51:::1
+54::11:V_clk = 0
+60:::VP?
+63:::1
+66:::1
+69::11:V_clk = 0
+75:::VS?
+78:::1
+84:::1
+87:::1
+93:::1
+96:11,15::V_clk <= PVAB
+105:11::V_clk
+111:15::PVAB
+114:::1
+117:::0
+120:10,12::A_clk <= PAAB
+129:10::A_clk
+135:12::PAAB
+138:::1
+141:::0
+144:11,15,16::V_clk >= PVAB && V_clk <= PVARP
+166:11::V_clk
+172:16::PVARP
+175:11::V_clk
+181:15::PVAB
+184:::1
+187:::AR!
+190:10,12,13::A_clk >= PAAB && A_clk <= PAARP
+212:10::A_clk
+218:13::PAARP
+221:10::A_clk
+227:12::PAAB
+230:::1
+233:::AR!
+236:10,11,13,16::A_clk >= PAARP && V_clk >= PVARP
+259:11::V_clk
+265:16::PVARP
+268:10::A_clk
+274:13::PAARP
+277:::1
+280:::AS!
+283:::1
+286:::1
+289:::1
+292:::Aget?
+295:::1
+301:::1
+304:::1
+310:::1
+313:11,17::V_clk <= PVVB
+322:11::V_clk
+328:17::PVVB
+331:::1
+334:::0
+337:11,17,19::V_clk >= PVVB && V_clk <= VSP_thresh
+359:11::V_clk
+365:19::VSP_thresh
+368:11::V_clk
+374:17::PVVB
+377:::1
+380:::VSP!
+383:10,14::A_clk <= PAVB
+392:10::A_clk
+398:14::PAVB
+401:::1
+404:::0
+407:11,18,19::V_clk >= VSP_thresh && V_clk <= PVVRP
+429:11::V_clk
+435:18::PVVRP
+438:11::V_clk
+444:19::VSP_thresh
+447::21:TPVARP = 400
+453:::VR!
+456:10,11,14,18::A_clk >= PAVB && V_clk >= PVVRP
+479:11::V_clk
+485:18::PVVRP
+488:10::A_clk
+494:14::PAVB
+497:20:21:TPVARP = TPVARP_def
+503:::VS!
+506:::1
+509:::1
+512:::1
+515:::Vget?
+518:::1
+524:::1
+527:::1
+533:::1
+536:10::A_clk >= 110
+545:10::A_clk
+551:::110
+554:::1
+557:::VP!
+560:10,11,22,23::A_clk >= TAVI && V_clk >= TURI
+583:11::V_clk
+589:23::TURI
+592:10::A_clk
+598:22::TAVI
+601:::1
+604:::VP!
+607:::1
+610:::1
+613:::1
+616:::VSP?
+619:::1
+625:::1
+628:10,11,22,24::V_clk >= TLRI - TAVI && A_clk >= TLRI
+655:10::A_clk
+661:24::TLRI
+664:11::V_clk
+670:22,24::TLRI - TAVI
+677:::1
+680:::AP!
+683:56::t
+689:26::Amax
+695:26,56::t <= Amax
+704:::1
+707:::1
+710::56:t = 0
+716:::AP?
+719:25,56::t >= Amin
+729:56::t
+735:25::Amin
+738::56:t = 0
+744:::Aget!
+747:60::t
+753:28::Vmax
+759:28,60::t <= Vmax
+768:::1
+771:::1
+774::60:t = 0
+780:::VP?
+783:27,60::t >= Vmin
+793:60::t
+799:27::Vmin
+802::60:t = 0
+808:::Vget!
