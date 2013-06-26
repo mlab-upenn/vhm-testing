@@ -2,313 +2,255 @@ function [ifStruct] = readIFFile(fileName)
 %UNTITLED5 Summary of this function goes here
 %   Detailed explanation goes here
 fileId = fopen(fileName);
-clockCount = 0;
-variableCount = 0;
+clockCount = 1;
+constCount = 1;
+variableCount = 1;
+metaCount = 1;
+locationCount = 1;
+fixedCount = 1;
+costCount = 1;
+
+layoutCount = 1;
+instrCount = 1;
+processCount = 1;
+
+
+expressionCount = 1;
+edgeCount = 1;
+
+cellStruct = struct('type',cell(1),...
+                    'name',cell(1),...
+                    'value','var','meta','clock','location','fixed');
+
+processStruct = struct('initial',cell(1),...
+                       'name',cell(1),...
+                       'locations',cell(1),...
+                       'edges',cell(1));
+edgeStruct = struct('process',cell(1),...
+                    'source',cell(1),...
+                    'target',cell(1),...
+                    'guard',cell(1),...
+                    'sync',cell(1),...
+                    'update',cell(1));
+                       
 while ~feof(fileId)
     section = fgetl(fileId);
     switch section
         case 'layout'
             line = fgetl(fileId);
-            while ~isspace(line) || ~isempty(line)
-                if regexp(line,'[0-9]+:clock:[0-9]+:[a-z]+')
+            while (sum(~isspace(line))> 0 || ~isempty(line)) && ~feof(fileId)
+                if regexp(line,'[0-9]+:clock:-?[0-9]+:[a-zA-Z]+')
                     str = strsplit(line,':');
                     index = str2num(str{1});
                     number = str2num(str{3});
                     name = str{4};
                 
-                    cell.type = 'CLOCK';
-                    cell.index = index;
-                    cell.number = number;
-                    cell.name = name;
+                    clock.type = 'CLOCK';
+                    clock.index = index;
+                    clock.number = number;
+                    clock.name = name;
+                    ifStruct.layout.clocks{clockCount} = clock;
                     clockCount = clockCount + 1;
-                elseif regexp(line,'[0-9]+:const:[0-9]+')
+                elseif regexp(line,'[0-9]+:const:-?[0-9]+')
                     str = strsplit(line,':');
                     index = str2num(str{1});
                     value = str2num(str{3});
                     
-                    cell.type = 'CONST'
-                    cell.index = index;
-                    cell.number = value;
-                elseif regexp(line,'[0-9]+:var:[0-9]+:[0-9]+:[0-9]+:[0-9]+:[a-z]+')
+                    const.type = 'CONST';
+                    const.index = index;
+                    const.number = value;
+                    ifStruct.layout.constants{constCount} = const;
+                    constCount = constCount + 1;
+                elseif regexp(line,'[0-9]+:var:-?[0-9]+:-?[0-9]+:-?[0-9]+:-?[0-9]+:.+')
                     str = strsplit(line,':');
                     index = str2num(str{1});
                     min = str2num(str{3});
                     max = str2num(str{4});
                     init = str2num(str{5});
                     number = str2num(str{6});
-                    name = str2num(str{7});
+                    name = str{7};
                     
-                    cell.index = index;
-                    cell.min = min;
-                    cell.max = max;
-                    cell.init = init;
-                    cell.number = number;
-                    cell.name = name;
+                    var.type = 'VAR';
+                    var.index = index;
+                    var.min = min;
+                    var.max = max;
+                    var.init = init;
+                    var.number = number;
+                    var.name = name;
+                    ifStruct.layout.variables{variableCount} = var;
                     variableCount = variableCount + 1;
-                elseif regexp(line,'[0-9]+:meta:[0-9]+:[0-9]+:[0-9]+:[0-9]+:[a-z]+')
+                elseif regexp(line,'[0-9]+:meta:-?[0-9]+:-?[0-9]+:-?[0-9]+:-?[0-9]+:[a-zA-Z]+')
                     str = strsplit(line,':');
                     index = str2num(str{1});
                     min = str2num(str{3});
                     max = str2num(str{4});
                     init = str2num(str{5});
                     number = str2num(str{6});
-                    name = str2num(str{7});
+                    name = str{7};
                     
-                    cell.index = index;
-                    cell.min = min;
-                    cell.max = max;
-                    cell.init = init;
-                    cell.number = number;
-                    cell.name = name;
-                    variableCount = variableCount + 1;
-                elseif regexp(line,'[0-9]+:location::[a-z]+')
+                    meta.type = 'META';
+                    meta.index = index;
+                    meta.min = min;
+                    meta.max = max;
+                    meta.init = init;
+                    meta.number = number;
+                    meta.name = name;
+                    ifStruct.layout.metas{metaCount} = meta; 
+                    metaCount = metaCount + 1;
+                elseif regexp(line,'[0-9]+:location:[a-zA-Z]*:.+')
                     str = strsplit(line,':');
                     index = str2num(str{1});
-                    name = str2num(str{4});
+                    flag = str{3};
+                    name = str{4};
                     
-                    cell.index = index;
-                    cell.type = 'LOCATION';
-                    cell.flags = 'NONE';
-                    cell.name = name;
-                    
-                elseif regexp(line,'[0-9]+:location:committed:[a-z]+')
-                    str = strsplit(line,':');
-                    index = str2num(str{1});
-                    name = str2num(str{4});
-                    
-                    cell.index = index;
-                    cell.type = 'LOCATION';
-                    cell.flags = 'COMMITTED';
-                    cell.name = name;
-                elseif regexp(line,'[0-9]+:location:urgent:[a-z]+')
-                    str = strsplit(line,':');
-                    index = str2num(str{1});
-                    name = str2num(str{4});
-                    
-                    cell.index = index;
-                    cell.type = 'LOCATION';
-                    cell.flags = 'URGENT';
-                    cell.name = name;
-                elseif regexp(line,'[0-9]+:static:[0-9]+:[0-9]+:[a-z]+')
+                    location.index = index;
+                    location.type = 'LOCATION';
+                    switch flag
+                        case ''
+                            location.flags = 'NONE';
+                        case 'committed'
+                            location.flags = 'COMMITTED';
+                        case 'urgent'
+                            location.flags = 'URGENT';
+                        otherwise
+                            location.flags = 'NONE';
+                    end  
+                    location.name = name;
+                    ifStruct.layout.locations{locationCount} = location;
+                    locationCount = locationCount + 1;
+                elseif regexp(line,'[0-9]+:static:-?[0-9]+:-?[0-9]+:[a-zA-Z]+')
                     str = strsplit(line,':');
                     index = str2num(str{1});
                     min =str2num(str{3});
                     max = str2num(str{4});
                     name = str2num(str{5});
                     
-                    cell.index = index;
-                    cell.min = min;
-                    cell.max = max;
-                    cell.name = name;
+                    fixed.type = 'FIXED';
+                    fixed.index = index;
+                    fixed.min = min;
+                    fixed.max = max;
+                    fixed.name = name;
+                    
+                    ifStruct.layout.fixed{fixedCount} = fixed;
+                    fixedCount = fixedCount + 1;
+                elseif regexp(line,'[0-9]+:[a-zA-Z]+')
+                    str = strsplit(line,':');
+                    index = str2num(str{1});
+                    name = str{2};
+                    
+                    cost.index = index;
+                    cost.name = name;
+                    cost.type = 'COST';  
+                    ifStruct.layout.cost{costCount} = cost;
+                    costCount = costCount + 1;
                 end
+                line = fgetl(fileId);
             end
         case 'instructions'
+            line = fgetl(fileId);
+            while (sum(~isspace(line))> 0 || ~isempty(line)) && ~feof(fileId)
+                if regexp(line, '[0-9]+:\s-?[0-9]+\s-?[0-9]*\s-?[0-9]*\s-?[0-9]*.*')
+                    str = sscanf(line,'%d:%d%d%d%d');
+                    instructions.address = str(1);
+                    instructions.values = str(2:end);
+                    ifStruct.instructions{instrCount} = instructions;
+                    instrCount = instrCount + 1;
+                end
+                line = fgetl(fileId);
+            end
         case 'processes'
+            line = fgetl(fileId);
+            while (sum(~isspace(line))> 0 || ~isempty(line)) && ~feof(fileId)
+                if regexp(line,'[0-9]+:-?[0-9]+:[a-zA-Z]+')
+                    str = strsplit(line,':');
+                    index = str2num(str{1});
+                    initial = str2num(str{2});
+                    name = str{3};
+                    
+                    process.index = index;
+                    process.initial = initial;
+                    process.name = name;
+                    ifStruct.processes{processCount} = process;
+                    ifStruct.processes{processCount}.locations = {};
+                    ifStruct.processes{processCount}.edges = {};
+                    processCount = processCount + 1;
+                end
+                line = fgetl(fileId);
+            end
         case 'locations'
+            line = fgetl(fileId);
+            while (sum(~isspace(line))> 0 || ~isempty(line)) && ~feof(fileId)
+                if regexp(line, '[0-9]+:-?[0-9]+:-?[0-9]+')
+                    str = strsplit(line,':');
+                    index = str2num(str{1});
+                    process = str2num(str{2});
+                    invariant = str2num(str{3});
+                    
+                    position = findByIndex(ifStruct.layout.locations, index);
+                    ifStruct.layout.locations{position}.process = process;
+                    ifStruct.layout.locations{position}.invariant = invariant;
+                
+                    position = findByIndex(ifStruct.processes,process);
+                    loc = ifStruct.processes{position}.locations;
+                    loc = {loc{1:end} index};
+                    ifStruct.processes{position}.locations = loc;
+                end
+                line = fgetl(fileId);
+            end
         case 'edges'
+            line = fgetl(fileId);
+            while (sum(~isspace(line))> 0 || ~isempty(line)) && ~feof(fileId)
+                if regexp(line,'[0-9]+:-?[0-9]+:-?[0-9]+:-?[0-9]+:-?[0-9]+:-?[0-9]+')
+                    str = strsplit(line,':');
+                    edge.process = str2num(str{1});
+                    edge.source = str2num(str{2});
+                    edge.target = str2num(str{3});
+                    edge.guard = str2num(str{4});
+                    edge.sync = str2num(str{5});
+                    edge.update = str2num(str{6}); 
+                    
+                    position = findByIndex(ifStruct.processes,edge.process);
+                    ed =  ifStruct.processes{position}.edges;
+                    ed = {ed{1:end} edge};
+                    ifStruct.processes{position}.edges = ed;
+                    ifStruct.edges{edgeCount} = edge;
+                    edgeCount = edgeCount + 1;
+                end
+                line = fgetl(fileId);
+            end
         case 'expressions'
+            line = fgetl(fileId);
+            while (sum(~isspace(line))> 0 || ~isempty(line)) && ~feof(fileId)
+                if regexp(line,'[0-9]+:-?[0-9,]*:-?[0-9,]*:.+')
+                    str = strsplit(line,':');
+                    address = str2num(str{1});
+                    reads = str{2};
+                    if ~isempty(strfind(reads,','))
+                        reads = strsplit(reads,',');
+                    end
+                    writes = str{3};
+                    if ~isempty(strfind(writes,','))
+                        writes = strsplit(writes,',');
+                    end
+                    text = str{4};
+                    expression.address = address;
+                    expression.reads = reads;
+                    expression.writes = writes;
+                    expression.text = text;
+                    
+                    ifStruct.expressions{expressionCount} = expression;
+                    expressionCount = expressionCount + 1;
+                end  
+                line = fgetl(fileId);
+            end
     end
 end
-
+    function position = findByIndex(array,index)
+        for i = 1:length(array)
+            if array{i}.index == index
+                position = i;
+                break;
+            end
+        end
+    end 
 end
-
-void loadIF(FILE *file)
-{
-    char str[255];
-    char section[16];
-    char name[32];
-    int index;
-
-    while (fscanf(file, "%15s\n", section) == 1)
-    {
-        if (strcmp(section, "layout") == 0)
-        {
-            while (read(file, str, 255) && !isspace(str[0]))
-            {
-                char s[5];
-                cell_t cell;
-                
-                if (sscanf(str, "%d:clock:%d:%31s", &index, 
-                           &cell.clock.nr, name) == 3)
-                {
-                    cell.type = CLOCK;
-                    cell.name = name;
-                    clocks.push_back(name);
-                    clockCount++;
-                }
-                else if (sscanf(str, "%d:const:%d", &index, 
-                                &cell.value) == 2)
-                {
-                    cell.type = CONST;
-                }
-                else if (sscanf(str, "%d:var:%d:%d:%d:%d:%31s", &index, 
-                                &cell.var.min, &cell.var.max, &cell.var.init, 
-                                &cell.var.nr, name) == 6)
-                {
-                    cell.type = VAR;
-                    cell.name = name;
-                    variables.push_back(name);
-                    variableCount++;
-                }
-                else if (sscanf(str, "%d:meta:%d:%d:%d:%d:%31s", &index,
-                                &cell.meta.min, &cell.meta.max, &cell.meta.init,
-                                &cell.meta.nr, name) == 6)
-                {
-                    cell.type = META;
-                    cell.name = name;
-                    variables.push_back(name);
-                    variableCount++;
-                }
-                else if (sscanf(str, "%d:location::%31s", &index, name) == 2)
-                {
-                    cell.type = LOCATION;
-                    cell.location.flags = NONE;
-                    cell.name = name;
-                }
-                else if (sscanf(str, "%d:location:committed:%31s", &index, name) == 2)
-                {
-                    cell.type = LOCATION;
-                    cell.location.flags = COMMITTED;
-                    cell.name = name;
-                }
-                else if (sscanf(str, "%d:location:urgent:%31s", &index, name) == 2)
-                {
-                    cell.type = LOCATION;
-                    cell.location.flags = URGENT;
-                    cell.name = name;
-                }
-                else if (sscanf(str, "%d:static:%d:%d:%31s", &index,
-                                &cell.fixed.min, &cell.fixed.max, 
-                                name) == 4)
-                {
-                    cell.type = FIXED;
-                    cell.name = name;
-                }
-                else if (sscanf(str, "%d:%5s", &index, s) == 2
-                         && strcmp(s, "cost") == 0)
-                {
-                    cell.type = COST;
-                }
-                else 
-                {
-                    throw invalid_format(str);
-                }
-
-                layout.push_back(cell);
-            }
-        }
-        else if (strcmp(section, "instructions") == 0)
-        {
-            while (read(file, str, 255) && !isspace(str[0]))
-            {
-                int address;
-                int values[4];
-                int cnt = sscanf(
-                    str, "%d:%d%d%d%d", &address, 
-                    values + 0, values + 1, values + 2, values + 4);
-                if (cnt < 2)
-                {
-                    throw invalid_format("In instruction section");
-                }
-
-                for (int i = 0; i < cnt; i++)
-                {
-                    instructions.push_back(values[i]);
-                }
-            }
-        }
-        else if (strcmp(section, "processes") == 0)
-        {
-            while (read(file, str, 255) && !isspace(str[0]))
-            {
-                process_t process;
-                if (sscanf(str, "%d:%d:%31s", 
-                           &index, &process.initial, name) != 3)
-                {
-                    throw invalid_format("In process section");
-                }
-                process.name = name;
-                processes.push_back(process);
-                processCount++;
-            }
-        }
-        else if (strcmp(section, "locations") == 0)
-        {
-            while (read(file, str, 255) && !isspace(str[0]))
-            {
-                int index;
-                int process;
-                int invariant;
-
-                if (sscanf(str, "%d:%d:%d", &index, &process, &invariant) != 3)
-                {
-                    throw invalid_format("In location section");
-                }
-
-                layout[index].location.process = process;
-                layout[index].location.invariant = invariant;
-                processes[process].locations.push_back(index);
-            }
-        }
-        else if (strcmp(section, "edges") == 0)
-        {
-            while (read(file, str, 255) && !isspace(str[0]))
-            {
-                edge_t edge;
-
-                if (sscanf(str, "%d:%d:%d:%d:%d:%d", &edge.process, 
-                           &edge.source, &edge.target,
-                           &edge.guard, &edge.sync, &edge.update) != 6)
-                {
-                    throw invalid_format("In edge section");
-                }                
-
-                processes[edge.process].edges.push_back(edges.size());
-                edges.push_back(edge);
-            }
-        }
-        else if (strcmp(section, "expressions") == 0)
-        {
-            while (read(file, str, 255) && !isspace(str[0]))
-            {
-                if (sscanf(str, "%d", &index) != 1)
-                {
-                    throw invalid_format("In expression section");
-                }                    
-                
-                /* Find expression string (after the third colon).
-                 */
-                char *s = str;
-                int cnt = 3;
-                while (cnt && *s)
-                {
-                    cnt -= (*s == ':');
-                    s++;
-                }
-                if (cnt)
-                {
-                    throw invalid_format("In expression section");
-                }
-
-                /* Trim white space. 
-                 */
-                while (*s && isspace(*s)) 
-                {
-                    s++;
-                }
-                char *t = s + strlen(s) - 1;
-                while (t >= s && isspace(*t)) 
-                {
-                    t--;
-                }
-                t[1] = '\0';
-
-                expressions[index] = s;
-            }
-        }
-        else 
-        {
-            throw invalid_format("Unknown section");
-        }
-    }  
-};

@@ -47,7 +47,7 @@ end
 
 fscanf(fileId,'.');
 
-variables = fscanf(fileId,'%d')
+variables = fscanf(fileId,'%d');
 
 
 
@@ -55,21 +55,17 @@ stateStruct.locations = locations;
 stateStruct.variables = variables;
 stateStruct.dbm = dbm;
 
-textscan(fileId,'.');
+fscanf(fileId,'.');
 %% Make transition Struct
 edges = zeros(processCount,1);
 
 prevPos = ftell(fileId);
 [data, pos] = textscan(fileId,'%d %d\n','EndOfLine','\n','whitespace', ' ');
-one = data{1}
-two = data{2}
+data{2}
 if isempty(data{2})
-    fseek(fileId,prevPos-pos,'cof');
-    disp('empty')
+    fseek(fileId,prevPos-pos,'cof')
 else
-    fseek(fileId,prevPos-pos,'cof');
-    disp('not empty')
-    fscanf(fileId,'.');
+    fseek(fileId,prevPos-pos,'cof')
     data = fscanf(fileId,'%d %d\n',[2,Inf]);
     data = data';
     totTrans = size(data,1);
@@ -77,7 +73,7 @@ else
     for e = 1:totTrans
         process = data(e,1);
         edge = data(e,2);
-        edges(process+1) = edge;
+        edges(process) = edge;
     end
     fscanf(fileId,'.');
 end

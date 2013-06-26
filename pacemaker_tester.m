@@ -1,151 +1,154 @@
+function [] = pacemaker_tester(filename,pacemaker_param,varargin)
+%pacemaker_tester takes in:
+%   filename, a char array of the name of a file that contains the test 
+%       data.
+%   pacemaker_param, a structure defining pacemaker parameters.
+%   and additional arguments.
+%
+%
+%varagin
+%   'plot' plots the data. 
+%       'signals' or 0 plots only the signals
+%       'timers' or 1 plots only the timers
+%       'all' or 2 plots both
+%   'runTo' defines the length of the test (i.e. if the test to run up to 3000 ms, etc.).
+%       Default is to stop the test once the test file has finished reading.   
+%       parameter is a double or char defining the time in ms when to stop.
+%       i.e. ,'runTo',750) stops the test at 750 ms.
+%   'plotIteratively' plots the data piece by piece after each loop
+%       parameter is a double or char defining the time in ms when to start
+%       plotting. i.e. 'plotIteratively',750) starts plotting at 750 ms.
+%       Default is off.s
+%   'tolerances' defines the allowable error in ms to be considered on time
+%       parameter is a matrix or cell array defining the accepted tolerance 
+%       for atrial timing and ventrial timing.
+%       i.e. [10,8] or {10,8} allows for 10 ms for atrial tolerance and 8 ms for
+%       ventricular tolerance. Default is no tolerances ([0,0]).
+%   'allowOffset' defines if an offset will be applied if a signal is not
+%   on time
+%       parameter is either 'yes' or 1 to enable. Default is off.
+%   'stepSize' defines the step in ms per each iteration in the test.
+%       parameter is a double or char defining the stepsize. i.e
+%       'stepSize',.1) will set the step to 0.1 ms. Default is 1 ms.
 %{
-Test Issues
-9 - offset from VS
-22 - offset from VS
-34,
-45- typo
-Test 38 - typo, PVC issue
-Test 41 - A-A-interval issue
-Test 50 - PVC issue
-Test 53 -Atrial output, ven input
-%}
-%TODO: AS, VS, VR, AR arrows get printed twice. fix.
 close all;
 clear;
 clc;
-%[54]; % 61 63 65 66 68 69 72 74]; %
-%errors: 69, 71, 72, 75  
-index = [1:29, 31:34, 36:39, 40:43, 45:75]; %[1:29, 31:34, 36:39];
-try
-for i= 1:length(index)
+%}
 %% Decide what to plot
-plotSignals = 1;
-plotTimers = 1;
+plotSignals = 0;
+plotTimers = 0;
 breakEarly = 1;
 plotIteratively = 0;
-skipTo = 750; %if plotting iteratively, select how far you want to skip to.
-
+skipTo = 0; %if plotting iteratively, select how far you want to skip to.
+pace_inter=1; %default stepsize
+total_time = 3000;%ms %define how long you want to run the test.
+tolerance_atrial = 0; %Acceptable tolerance (in ms) for detecting atrial output signals
+tolerance_ventrical = 0; %Acceptable tolerance for detecting ventricular output signals.
+greatestTolerance = max([tolerance_atrial, tolerance_ventrical]);
 %% Decide what to test
-doTest = 1;
-useDataFile = 1;
-allowTolerances = 1;
-allowOffsets = 1;
-plotTest = 1;
-
-%% Extras
-sendText = 0;
-cellNumber = 'gmchen';
-service = 'textnow';
-subject = '';
-message = 'Master, I have finished computing - mLab computer. Problems: ';
-badMessage = 'Master, something went wrong -mLab computer';
+allowOffsets = 0;
+%% Varagins
+%take into account multiple argumemts
+    if ~isempty(varargin)
+        for i = 1:2:length(varargin)
+            argument = varargin{i};
+            if strcmpi(argument,'plot')
+                parameter = varargin{i+1};
+                if isa(parameter,'char')
+                    if strcmpi(parameter,'signals')
+                        plotSignals = 1;
+                    elseif strcmpi(parameter,'timers')
+                        plotTimers = 1;
+                    elseif strcmpi(parameter,'all')
+                        plotSignals = 1;
+                        plotTimers = 1;
+                    end
+                elseif isa(parameter,'double')
+                    switch parameter
+                        case 0
+                            plotSignals = 1;
+                        case 1
+                            plotTimers = 1;
+                        case 2
+                            plotSignals = 1;
+                            plotTimers = 1;
+                    end
+                end
+            elseif strcmpi(argument,'runTo')
+                parameter = varargin{i+1};
+                total_time = parameter;
+                breakEarly = 0;
+            elseif strcmpi(argument,'plotIteratively')
+                parameter = varargin{i+1};
+                if isa(parameter,'char')
+                    if strcmpi(parameter,'beginning')
+                        skipTo = 0;
+                        plotIteratively = 1;
+                        plotSignals = 1;
+                        plotTimers = 1;
+                    else
+                        skipTo = str2num(parameter);
+                        plotIteratively = 1;
+                        plotSignals = 1;
+                        plotTimers = 1;
+                    end
+                elseif isa(parameter,'double')
+                    skipTo = parameter;
+                    plotIteratively = 1;
+                    plotSignals = 1;
+                    plotTimers = 1;
+                end
+            elseif strcmpi(argument,'tolerances')
+                parameter = varargin{i+1};
+                if iscell(parameter)
+                    tolerance_atrial = parameter{1};
+                    tolerance_ventrical = parameter{2};
+                    greatestTolerance = max([tolerance_atrial, tolerance_ventrical]);
+                else
+                    tolerance_atrial = parameter(1);
+                    tolerance_ventrical = parameter(2);
+                    greatestTolerance = max([tolerance_atrial, tolerance_ventrical]);
+                end
+            elseif strcmpi(argument,'allowOffset')
+                parameter = varargin{i+1};
+                if isa(parameter,'char')
+                    if strcmpi(parameter,'yes')
+                        allowOffsets = 1;
+                    end
+                elseif isa(parameter,'double')
+                    if parameter == 1
+                        allowOffsets = 1;
+                    end
+                end
+            elseif strcmpi(argument,'stepSize')
+                parameter = varargin{i+1};
+                if isa(parameter,'char')
+                    pace_inter = str2num(parameter);
+                elseif isa(parameter,'double')
+                    pace_inter = parameter;
+                end
+            else
+                error(['Unknown argument ''',varargin{i},'''']);
+            end
+        end
+    end
 
 %% Preallocation
-load Pacemaker_models/medtronic_params_VRP_300
-load Medtronic_tests/medtronic_test_1-75
-pace_param = medtronic_param;
-number = index(i)
-fileName = strcat('test_File_', num2str(number));
-sample_File = eval(fileName);
-pace_param.mode_switch = 'on';
-pace_param.LRI_cur = 750;
-switch number
-    case {40}
-        pace_param.URI_cur = 750;
-        pace_param.URI_def = 750;
-    case {50, 56}
-        pace_param.pAVI_cur = 150;
-        pace_param.pAVI_def = 150;
-        pace_param.sAVI_cur = 150;
-        pace_param.sAVI_def = 150;
-        pace_param.LRI_cur = pace_param.LRI_def - pace_param.sAVI_def;
-    case {53}
-        pace_param.pAVI_def = 300;
-        pace_param.pAVI_cur = 300;
-        pace_param.sAVI_def = 300;
-        pace_param.sAVI_cur = 300;
-        pace_param.URI_cur = 666;
-        pace_param.URI_def = 666;
-        pace_param.LRI_def = 1000;
-        pace_param.LRI_cur = pace_param.LRI_def - pace_param.sAVI_def;
-        
-    case {54, 55}
-        pace_param.URI_cur = 500;
-        pace_param.URI_def = 500;
-        pace_param.sAVI_cur = 80;
-        pace_param.sAVI_def = 80;
-        pace_param.pAVI_cur = 80;
-        pace_param.pAVI_def = 80;
-        pace_param.VSP_sense = 80;
-        pace_param.LRI_def = 600;
-        pace_param.LRI_cur = pace_param.LRI_def - pace_param.sAVI_def;
-    case {57, 58, 59, 61, 62, 64, 65, 66, 67, 70}
-        pace_param.pAVI_def = 200;
-        pace_param.pAVI_cur = 200;
-        pace_param.sAVI_def = 200;
-        pace_param.sAVI_cur = 200;
-        pace_param.LRI_cur = pace_param.LRI_def - pace_param.sAVI_def;
-    case {60, 63}
-        pace_param.pAVI_cur = 150;
-        pace_param.pAVI_def = 150;
-        pace_param.sAVI_cur = 150;
-        pace_param.sAVI_def = 150;
-        pace_param.URI_cur = 666;
-        pace_param.URI_def = 666;
-        pace_param.LRI_cur = pace_param.LRI_def - pace_param.sAVI_def;
-    case {68, 72}
-        pace_param.pAVI_cur = 120;
-        pace_param.pAVI_def = 120;
-        pace_param.sAVI_cur = 120;
-        pace_param.sAVI_def = 120;
-        pace_param.URI_cur = 666;
-        pace_param.URI_def = 666;
-        pace_param.LRI_cur = pace_param.LRI_def - pace_param.sAVI_def;
-    case {69}
-        pace_param.pAVI_cur = 120;
-        pace_param.pAVI_def = 120;
-        pace_param.sAVI_cur = 120;
-        pace_param.sAVI_def = 120;
-        pace_param.URI_cur = 545;
-        pace_param.URI_def = 545;
-        pace_param.LRI_cur = pace_param.LRI_def - pace_param.sAVI_def;
-    case {71}
-        pace_param.pAVI_cur = 200;
-        pace_param.pAVI_def = 200;
-        pace_param.sAVI_cur = 200;
-        pace_param.sAVI_def = 200;
-        pace_param.URI_cur = 500;
-        pace_param.URI_def = 500;
-        pace_param.LRI_cur = pace_param.LRI_def - pace_param.sAVI_def; 
-    case {73}
-        pace_param.pAVI_cur = 200;
-        pace_param.pAVI_def = 200;
-        pace_param.sAVI_cur = 200;
-        pace_param.sAVI_def = 200;
-        pace_param.URI_cur = 750;
-        pace_param.URI_def = 750;
-        pace_param.LRI_cur = pace_param.LRI_def - pace_param.sAVI_def; 
-    case {74, 75}
-        pace_param.pAVI_cur = 200;
-        pace_param.pAVI_def = 200;
-        pace_param.sAVI_cur = 200;
-        pace_param.sAVI_def = 200;
-        pace_param.PVARP_def = 500;
-        pace_param.PVARP_cur = 500;
-        pace_param.VRP_def = 500;
-        pace_param.VRP_cur = 500;
-        pace_param.URI_cur = 750;
-        pace_param.URI_def = 750;
-        pace_param.LRI_cur = pace_param.LRI_def - pace_param.sAVI_def; 
-        
+pace_param = pacemaker_param;
+if isa(filename, 'double')
+    sample_File = filename;
+else isa(filename,'char')
+    [path file ext] = fileparts(filename);
+    if strcmp(ext,'.txt')
+        fid = fopen(filename);
+        sample_File = fscanf(fid,'%d %d',[2,inf])';
+    end
 end
-pace_inter=1;
-
 A_get=0;
 V_get=0;
 
 t=-1;
-total_time = 3000;%ms
 
 gdata=zeros(1,total_time);
 
@@ -212,7 +215,7 @@ if plotSignals
     REF_MAGNITUDE = 2;
     SIGN_MAGNITUDE = 0.3;
     %Title font properties
-    TITLE_NAME = ['Pacemaker Operation Medtronic Test ',num2str(number)];
+    TITLE_NAME = ['Pacemaker Operation Medtronic Test '];%,filename];
     TITLE_FONT = 'AvantGarde';
     TITLE_FONT_SIZE = 20;
     TITLE_FONT_WEIGHT = 'Bold';
@@ -233,7 +236,7 @@ if plotTimers
     TIMER_FONT_SIZE = 16;
     TIMER_FONT_WEIGHT = 'Bold';
 end
-if useDataFile
+
     A_BOUND_COLOR = 'g';
     A_OFFSET_COLOR = [0 204/255 102/255];
     V_BOUND_COLOR = [153/255 204/255 1];
@@ -245,7 +248,7 @@ if useDataFile
     ifVOutput = 0;
     input_done = 0;
     output_done = 0;
-end
+
     XAXIS_NAME = 'time (milliseconds)';
     XAXIS_FONT_WEIGHT = 'Bold';
     XAXIS_FONT_SIZE = 16;
@@ -255,7 +258,6 @@ end
     TEXT_FONT_WEIGHT = 'Bold';
     
 %% Test Variables
-if doTest
 %Message Constants
     SENT_A_SIG = 'sent atrial signal at t=';
     DETECT_A_SIG = 'pacemaker detected atrial signal at t=';
@@ -279,15 +281,6 @@ if doTest
     GOOD_COLOR = 'Comments';
     ERROR_COLOR = [1 0 0];
     NOTE_COLOR = [0 0 1];
-%parameters
-if allowTolerances
-    tolerance_atrial = 10; %Acceptable tolerance (in ms) for detecting atrial output signals
-    tolerance_ventrical = 10; %Acceptable tolerance for detecting ventricular output signals.
-    greatestTolerance = max([tolerance_atrial, tolerance_ventrical]);
-else 
-    tolerance_atrial = 0;
-    tolerance_ventrical = 0;
-end
 %Global Variables
     nextLine = 0; %variable to determine which line in the file is being processed
     offset = 0; %variable to store any necessary offsets
@@ -295,9 +288,7 @@ end
     v_ifPaced = 0; %boolean to determine if pacemaker paced ventricle
     a_ifSensed = 0; %boolean to determine if pacemaker sensed atrium signal
     v_ifSensed = 0; %boolean to determine if pacemaker sensed ventricle signal
-end
 %% Input File Variables
-if useDataFile    
     %Constants
     ATRIAL_INPUT = 1;
     VENTRICAL_INPUT = 2;
@@ -310,16 +301,8 @@ if useDataFile
     nextNextTime = 0; % the next time for the event after the expected event
     nextEvent = 0; %The next type of event, from 1-4
     nextNextEvent = 0; %The next next type of event, from 1-4  
-end
 %% Signal occurences
-if ~useDataFile
-    ASign = [0 300]; %times when an atrial signal occurs
-    VSign = [250]; %times when a venticular signal occurs
-    AOutput = [1000];
-    VOutput = [1250];
-elseif useDataFile
     read_next; %see script/ or see function increment
-end
 %% PreDraw Graphs
 if plotSignals || plotTimers
     figure;
@@ -365,7 +348,6 @@ while t< total_time
     t=t+1;
     
     %% Do Test
-    if doTest
         sendASignal = 0;
         sendVSignal = 0;
         switch nextEvent
@@ -463,35 +445,10 @@ if breakEarly
         end   
 end
       
-    end
+    
     %% Plot Pacemaker Sensing/Pacing
     if plotSignals
-        if ~useDataFile
-            name = '';
-            faceColor = 'k';
-            if ismember(t,ASign)
-                pace_param=pacemaker_new(pace_param, 1, V_get, 1);
-                if plotSignals
-                    if plotTimers
-                        subplot(2,1,1)
-                    end
-                    arrow([t,0],[t,SIGN_MAGNITUDE],'Length', roLength, 'TipAngle',roTipAngle,'EdgeColor','k','FaceColor','y');
-                    text(t+10,SIGN_MAGNITUDE+0.4,'A_{Signal}','FontName', INPUT_FONT,'FontWeight',INPUT_FONT_WEIGHT,'Fontsize', INPUT_FONT_SIZE); 
-                end
-            elseif ismember(t,VSign)
-                pace_param=pacemaker_new(pace_param, A_get, 1, 1);
-                if plotSignals
-                    if plotTimers
-                        subplot(2,1,1)
-                    end
-                    arrow([t,0],[t,-SIGN_MAGNITUDE],'Length', roLength, 'TipAngle',roTipAngle,'EdgeColor','k','FaceColor','w');
-                    text(t+10,-SIGN_MAGNITUDE-0.4,'V_{Signal}','FontName', INPUT_FONT,'FontWeight',INPUT_FONT_WEIGHT,'Fontsize', INPUT_FONT_SIZE); 
-                end
-            else
-                pace_param=pacemaker_new(pace_param, A_get, V_get, 1);
-            end
         %% plot bound lines
-        elseif useDataFile && plotTest
             switch nextEvent
                 case {ATRIAL_OUTPUT ,A_OUTPUT_V_INPUT}   
                     if ifBoundsPrinted == 0
@@ -526,7 +483,6 @@ end
                         ifBoundsPrinted = 1;
                     end
             end
-        end %end plotting boundlines
     
     data=0;
         % a_pace
@@ -811,11 +767,9 @@ end
     if plotIteratively
         if skipTo <= 0 || skipTo <= t
             pause(0.001);
-            la = [t, pace_param.VRP_cur, pace_param.LRI_cur]
         end
      %   pace_param.AF_interval
     end
-    if doTest
         if sendASignal == 1
             pace_param = pacemaker_new(pace_param,1,0, pace_inter);
                 %cprintf(NOTE_COLOR, [SENT_A_SIG, num2str(t), '\n'])
@@ -843,7 +797,6 @@ end
         else
             pace_param = pacemaker_new(pace_param,0,0, pace_inter);
         end
-    end
    
 end
 disp(' ');
@@ -851,12 +804,4 @@ if plotSignals || plotTimers
     set(gcf, 'PaperPositionMode', 'auto');
 end
 end
-if sendText
-    send_text_message(cellNumber, service, subject, message);
-end
-catch err
-    error(getReport(err, 'extended'))
-    if sendText
-        send_text_message(cellNumber, service, subject, badMessage);
-    end
-end
+
