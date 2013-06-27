@@ -190,10 +190,10 @@ while ~feof(fileId)
                     ifStruct.layout.locations{position}.process = process;
                     ifStruct.layout.locations{position}.invariant = invariant;
                 
-                    position = findByIndex(ifStruct.processes,process);
-                    loc = ifStruct.processes{position}.locations;
-                    loc = {loc{1:end} index};
-                    ifStruct.processes{position}.locations = loc;
+                    pos = findByIndex(ifStruct.processes,process);
+                    loc = ifStruct.processes{pos}.locations;
+                    loc = {loc{1:end} ifStruct.layout.locations{position}};
+                    ifStruct.processes{pos}.locations = loc;
                 end
                 line = fgetl(fileId);
             end
