@@ -245,7 +245,6 @@ while ~feof(fileId)
                     expression.writes = writes;
                     expression.text = text;
                     
-                    storeExpression(expression)
                     ifStruct.expressions{expressionCount} = expression;
                     expressionCount = expressionCount + 1;
                 end  
@@ -261,24 +260,13 @@ end
             end
         end
     end 
-    function storeExpression(expression)
+    function storeExpression(text,address)
         for i = 1:length(ifStruct.layout.locations)
-            if ifStruct.layout.locations{i}.invariant == expression.address
-                ifStruct.layout.locations{i}.invariant = expression.text;
+            if ifStruct.layout.locations{i}.invariant == address
+                ifStruct.layout.locations{i}.invariant = text;
                 break;
             end
         end
-        for j = 1:length(ifStruct.edges)
-            if ifStruct.edges{j}.guard == expression.address
-                ifStruct.edges{j}.guard = expression.text;
-                break;
-            elseif ifStruct.edges{j}.sync == expression.address
-                ifStruct.edges{j}.sync = expression.text;
-                break;
-            elseif ifStruct.edges{j}.update == expression.address
-                ifStruct.edges{j}.update = expression.text;
-                break;
-            end
-        end
+        for j = 1:length(ifStruct.
     end
 end
