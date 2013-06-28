@@ -8,12 +8,11 @@ variables = zeros(variableCount,1);
 dbm = cell(clockCount,clockCount);
 
 prevPos = ftell(fileId);
-[a pos] = textscan(fileId,'%c\n','EndOfLine','\n')
+[a pos] = textscan(fileId,'%c\n','EndOfLine','\n');
 if length(a{1}) >1
-    a{1} = a{1}(2)
+    a{1} = a{1}(2);
 end
 %check if end of file
-strcmp(a{1},'.')
 if ~strcmp(a{1},'.')
     fseek(fileId,prevPos-pos,'cof');
 
@@ -89,7 +88,6 @@ if ~strcmp(a{1},'.')
     end
     transitionStruct.edges = edges;
 else
-    disp('la');
     stateStruct = {};
     transitionStruct = {};
 end

@@ -104,6 +104,7 @@ while ~feof(fileId)
                     name = str{4};
                     
                     location.index = index;
+                    location.name = name;
                     location.type = 'LOCATION';
                     switch flag
                         case ''
@@ -115,7 +116,9 @@ while ~feof(fileId)
                         otherwise
                             location.flags = 'NONE';
                     end  
-                    location.name = name;
+                    location.invariant = {};
+                    location.process = {};
+                    
                     ifStruct.layout.locations{locationCount} = location;
                     locationCount = locationCount + 1;
                 elseif regexp(line,'[0-9]+:static:-?[0-9]+:-?[0-9]+:[a-zA-Z]+')
@@ -215,11 +218,12 @@ while ~feof(fileId)
                     edge.guard = str2num(str{4});
                     edge.sync = str2num(str{5});
                     edge.update = str2num(str{6}); 
-                    
+                    %{
                     position = findByIndex(ifStruct.processes,edge.process);
                     ed =  ifStruct.processes{position}.edges;
                     ed = {ed{1:end} edge};
                     ifStruct.processes{position}.edges = ed;
+                    %}
                     ifStruct.edges{edgeCount} = edge;
                     edgeCount = edgeCount + 1;
                 end
@@ -253,6 +257,44 @@ while ~feof(fileId)
             end
     end
 end
+%fix up the indexing problem
+for l = 1:length(ifStruct.layout.locations)
+    location = ifStruct.layout.locations{l};
+    locIdx = location.index;
+    processIdx = location.process;
+    
+    pos = findByIndex(ifStruct.processes,processIdx);
+    for pl = 1:length(ifStruct.processes{pos}.locations)
+        if ifStruct.processes{pos}.locations{pl}.index == locIdx
+            ifStruct.processes{pos}.locations{pl} = ifStruct.layout.locations{l};
+        end
+    end
+    if ifStruct.processes{pos}.initial == ifStruct.layout.locations{position}.index
+        ifStruct.processes{pos}.initial = ifStruct.layout.locations{position};
+    end
+    
+    for ed = 1:length(ifStruct.edges)
+        edge = ifStruct.edges{ed};
+        if edge.source.index == locIdx
+            ifStruct.edges{ed}.source = ifStruct.layout.locations{l};
+        end
+        if edge.target.index == locIdx
+            ifStruct.edges{ed}.target = ifStruct.layout.locations{l};
+        end
+    end
+end
+
+for ed = 1:length(ifStruct.edges)
+    edge = ifStruct.edges{ed};
+    processPos = findByIndex(ifStruct.processes,edge.process);
+    ifStruct.processes{processPos}.edges
+    edg =  ifStruct.processes{processPos}.edges;
+    edg = {edg{1:end} edge};
+    ifStruct.processes{processPos}.edges = edg;
+end
+
+
+%% extra functions
     function position = findByIndex(array,index)
         for i = 1:length(array)
             if array{i}.index == index
@@ -261,6 +303,7 @@ end
             end
         end
     end 
+
     function storeExpression(expression)
         for i = 1:length(ifStruct.layout.locations)
             if ifStruct.layout.locations{i}.invariant == expression.address
