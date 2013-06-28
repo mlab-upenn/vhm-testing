@@ -1,6 +1,11 @@
+function [model ifStruct] = makeStateModel(ifFile,xtrFile)
+%UNTITLED2 Summary of this function goes here
+%   Detailed explanation goes here
+
 %main IF/xtr file.
 
-%this script produces an array of structures that represents each state
+%this function takes in a .xtr file and .if file and 
+%produces an array of structures (model) that represents each state
 %taken in the symbolic model
 %model{n} represents the state of the model during the nth iteration
 %each model contains two structures, state and transition. 
@@ -18,8 +23,6 @@
 %   model{n}.transition.process{p}.edge will show with edge was use for the
 %   transition. if model{n}.transition.process{p} is empty, not transition was
 %   made.
-ifFile = 'model.if';
-xtrFile = 'test.xtr';
 ifStruct = readIFFile(ifFile);
 
 fid = fopen(xtrFile);
@@ -43,7 +46,6 @@ while ~feof(fid)
     end
         model{stateCount}.state.dbm = xtrStateStruct.dbm;
         
-        
         [m n] = size(xtrStateStruct.dbm);
         dbmat = zeros(m,n);
         for r= 1:m
@@ -64,3 +66,6 @@ while ~feof(fid)
     end
     stateCount = stateCount + 1;
 end
+
+end
+
