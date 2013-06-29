@@ -50,7 +50,8 @@ if ~isempty(varargin)
         argument = varargin{v};
         if strcmpi(argument,'addToSystem')
             yesToSystem = 1;
-        end  
+        end
+           
     end
 end
 
