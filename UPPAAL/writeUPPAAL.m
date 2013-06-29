@@ -133,7 +133,7 @@ end
             declarations = '';
             for dec = 1:total
                 declarations = [declarations,declaration{dec,1},' ',addCommas(declaration{dec,2})];
-                if strcmp(declaration(dec,1),'clock')
+                if strcmp(declaration(dec,1),'clock') || length(declaration{dec,2}) > 1
                     declarations = sprintf([declarations,';\n']);
                 else
                     declarations = [declarations,'=',num2str(declaration{dec,3}),';'];
