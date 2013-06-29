@@ -1,8 +1,7 @@
 function [theStruct] = readUPPAAL(filename)
 %readUPPAAL reads in a UPPAAL-formatted .xml file and outputs a structure
 %   containing data from the .xml file.
-%   filename is the name of the file i.e. 'uppaalfile.xml'
-%   theStruct has the contents of the file in a structure-format.
+%   filename is the name 
 try
    doc = xmlread(filename);
 catch err

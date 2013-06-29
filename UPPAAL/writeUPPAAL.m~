@@ -46,9 +46,7 @@ for t = 1:tottemps
             template_node.appendChild(parameterNode);
         end
     else
-        parameter = {'' '' ''};
-        parameterNode = makeParameterNode(parameter);
-        template_node.appendChilde(parameterNode);
+        parameter = {'' '' ''}
     end
     %declaration nodes
     totDec = length(struct.template{t}.declaration);
