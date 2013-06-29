@@ -252,11 +252,10 @@ end
                                 v = v+1;
                             end
                         elseif length(strfind(line{m},'=')) >= 1
-                            line = line(1:strfind(line,';')-1);
-                            line = line(~isspace(line));
-                            line = strsplit(line,'=');
-                            processName = line{1};
-                            theRest = line{2};
+                            line{m} = line{m}(~isspace(line{m}));
+                            newline = strsplit(line{m},'=');
+                            processName = newline{1};
+                            theRest = newline{2};
                             theRest = strsplit(theRest,'(');
                             funct = theRest{1};
                             theRest = theRest{2};
