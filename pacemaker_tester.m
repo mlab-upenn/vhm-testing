@@ -52,6 +52,36 @@ tolerance_atrial = 0; %Acceptable tolerance (in ms) for detecting atrial output 
 tolerance_ventrical = 0; %Acceptable tolerance for detecting ventricular output signals.
 greatestTolerance = max([tolerance_atrial, tolerance_ventrical]);
 output = 0; %0 if output to display, 1 if printing to file.
+breakEarly = 1;
+totalFiles = 1;
+
+%stats
+%Global stats
+testError = 0;
+testsInError = '';
+total_V_late_errors = 0;
+total_V_early_errors = 0;
+total_V_wrong_errors = 0;
+
+total_A_late_errors = 0;
+total_A_early_errors = 0;
+total_A_wrong_errors = 0;
+
+avgMarginError = 0;
+greatestMarginError = 0;
+
+
+%file Stats
+marginError = 0;
+V_late_error = 0;
+V_early_error = 0;
+V_wrong_error = 0;
+
+A_late_error = 0;
+A_early_error = 0;
+A_wrong_error = 0;
+fileError = 0;
+
 %% Decide what to test
 allowOffsets = 0;
 %% Varagins
@@ -140,6 +170,7 @@ allowOffsets = 0;
                     output = 0;
                 else
                     output = 1;
+                    fileId = fopen(parameter,'w');
                 end
             else
                 error(['Unknown argument ''',varargin{i},'''']);
@@ -151,20 +182,59 @@ allowOffsets = 0;
 pace_param = pacemaker_param;
 if isa(filename, 'double')
     sample_File = filename;
-else isa(filename,'char')
+    name = inputname(1);
+    if output == 0
+        disp(name);
+    else
+        fprintf(fileId,[name,'\n']);
+    end
+elseif isa(filename,'char')
     [path file ext] = fileparts(filename);
+    name = file;
     if strcmp(ext,'.txt')
         fid = fopen(filename);
         sample_File = fscanf(fid,'%d %d',[2,inf])';
+        if output == 0
+            disp(name);
+        else
+            fprintf(fileId,[name,'\n']);
+        end
+    else
+        error(['Unsupported file format ''',ext,'''']);
     end
+elseif isa(filename,'cell')
+    totalFiles = length(filename);
+else
+    error(['Unsupported file format ''',inputname(1),'''']);
 end
-A_get=0;
-V_get=0;
 
-t=-1;
-
-gdata=zeros(1,total_time);
-
+for k = 1:totalFiles
+    if totalFiles > 1
+        if isa(filename{k},'double')
+            sample_File = filename{k};
+            name = [inputname(1),' ',num2str(k)];
+            if output == 0
+                disp(name);
+            else
+                fprintf(fileId,[inputname(1),' %d\n'],k);
+            end    
+        elseif isa(filename{k},'char')
+            [path file ext] = fileparts(filename{k});
+            name = file;
+            if strcmp(ext,'.txt')
+                fid = fopen(filename{k});
+                sample_File = fscanf(fid,'%d %d',[2,inf])';
+                if output == 0
+                    disp(name);
+                else
+                    fprintf(fileId,[name,'\n']);
+                end
+            else
+                error(['Unsupported file format ''',ext,'''']);
+            end
+        end
+    end
+    
 %% Script Variables
 if plotTimers
     % Timer Global Variables
@@ -274,21 +344,21 @@ end
 %Message Constants
     SENT_A_SIG = 'sent atrial signal at t=';
     DETECT_A_SIG = 'pacemaker detected atrial signal at t=';
-    NDETECT_A_SIG = 'pacemaker did not detect atrial signal at t=';
+    NDETECT_A_SIG = 'WARNING: pacemaker did not detect atrial signal at t=';
     
     SENT_V_SIG = 'sent ventrical signal at t=';
     DETECT_V_SIG = 'pacemaker detected ventrical signal at t=';
-    NDETECT_V_SIG = 'pacemaker did not detect ventrical signal at t=';
+    NDETECT_V_SIG = 'WARNING: pacemaker did not detect ventrical signal at t=';
     
-    A_EARLY = 'Pacemaker sent atrial signal early at t=';
+    A_EARLY = 'ERROR: Pacemaker sent atrial signal early at t=';
     A_ON = 'Pacemaker sent atrial signal On Time at t=';
-    A_LATE = 'Pacemaker sent atrial signal late at t=';
-    A_WRONG = 'Pacemaker incorrectly sent atrial signal. at t=';
+    A_LATE = 'ERROR: Pacemaker sent atrial signal late at t=';
+    A_WRONG = 'ERROR: Pacemaker incorrectly sent atrial signal. at t=';
     
-    V_EARLY = 'Pacemaker sent ventrical signal early at t=';
+    V_EARLY = 'ERROR: Pacemaker sent ventrical signal early at t=';
     V_ON = 'Pacemaker sent ventrical signal On Time at t=';
-    V_LATE = 'Pacemaker sent ventrical signal late at t=';
-    V_WRONG = 'Pacemaker incorrectly sent ventrical signal at t=';
+    V_LATE = 'ERROR: Pacemaker sent ventrical signal late at t=';
+    V_WRONG = 'ERROR: Pacemaker incorrectly sent ventrical signal at t=';
     
     WARNING_COLOR = [229/255 222/255 22/255];
     GOOD_COLOR = 'Comments';
@@ -315,7 +385,7 @@ end
     nextEvent = 0; %The next type of event, from 1-4
     nextNextEvent = 0; %The next next type of event, from 1-4  
 %% Signal occurences
-    read_next; %see script/ or see function increment
+    read_next(); %see script/ or see function increment
 %% PreDraw Graphs
 if plotSignals || plotTimers
     figure;
@@ -356,6 +426,8 @@ if plotSignals || plotTimers
     end
 end
 %% Loop
+t=-1;
+
 while t< total_time
     
     t=t+1;
@@ -366,7 +438,7 @@ while t< total_time
         switch nextEvent
 % Atrial Input        
         case ATRIAL_INPUT
-            atrial_input %see script
+            atrialInput() %see script
             if sendASignal == 1;
                 if plotSignals
                     if plotTimers
@@ -380,7 +452,7 @@ while t< total_time
             end
 % Ventrical Input            
         case VENTRICAL_INPUT
-            ventricular_input %see script
+            ventricularInput() %see script
             if sendVSignal == 1;
                 if plotSignals
                     if plotTimers
@@ -389,27 +461,27 @@ while t< total_time
                     arrow([t,0],[t,-SIGN_MAGNITUDE],'Length', roLength, 'TipAngle',roTipAngle,'EdgeColor','k','FaceColor','w');
                     text(t+10,-SIGN_MAGNITUDE-0.4,'V_{Signal}','FontName', INPUT_FONT,'FontWeight',INPUT_FONT_WEIGHT,'Fontsize', INPUT_FONT_SIZE); 
                 end
-                read_next; %see script/ or see function increment
+                read_next(); %see script/ or see function increment
                 ifBoundsPrinted = 0;
             end
 % Atrial Output           
         case ATRIAL_OUTPUT
-            atrial_output %see script
+            atrialOutput() %see script
             if ifAOutput == 1 
-                read_next; %see script/ or see function increment
+                read_next(); %see script/ or see function increment
                 ifBoundsPrinted = 0;
             end
 % VENTRICAL Output
         case VENTRICAL_OUTPUT
-            ventricular_output %see script
+            ventricularOutput() %see script
             if ifVOutput == 1
-                read_next; %see script/ or see function increment
+                read_next(); %see script/ or see function increment
                 ifBoundsPrinted = 0;
             end
 % TODO: Deal with these cases          
         case A_OUTPUT_V_INPUT
-            atrial_output 
-            ventricular_input
+            atrialOutput() 
+            ventricularInput()
     %        if pace_param.a_pace ==1
     %        end      
             if ifAOutput == 1
@@ -425,9 +497,8 @@ while t< total_time
                 output_done = 0;
             end
         case V_OUTPUT_A_INPUT
-            read_next;
-            ventricular_output
-            atrial_input
+            ventricularOutput()
+            atrialInput()
             if ifVOutput == 1
                 output_done = 1;
             end
@@ -440,7 +511,6 @@ while t< total_time
                 output_done = 0;
                 input_done = 0;
             end
-           %}
         end
         %break out of while loop once finished testing  
 if breakEarly        
@@ -785,36 +855,360 @@ end
     end
         if sendASignal == 1
             pace_param = pacemaker_new(pace_param,1,0, pace_inter);
-                %cprintf(NOTE_COLOR, [SENT_A_SIG, num2str(t), '\n'])
-                disp(strcat(SENT_A_SIG,num2str(t)));
+                if output == 0
+                    %cprintf(NOTE_COLOR, [SENT_A_SIG, num2str(t), '\n'])
+                    disp(strcat(SENT_A_SIG,num2str(t)));
+                else
+                    fprintf(fileId,[SENT_A_SIG,'%d\n'],t);
+                end
             if pace_param.a_sense
-                %cprintf(GOOD_COLOR, [DETECT_A_SIG, num2str(t), '\n'])
-                disp(strcat(DETECT_A_SIG,num2str(t)));
+                if output == 0
+                    %cprintf(GOOD_COLOR, [DETECT_A_SIG, num2str(t), '\n'])
+                    disp(strcat(DETECT_A_SIG,num2str(t)));
+                else
+                    fprintf(fileId,[DETECT_A_SIG,'%d\n'],t);
+                end
             else
-                %cprintf(WARNING_COLOR, [NDETECT_A_SIG, num2str(t), '\n'])
-                disp(strcat(NDETECT_A_SIG,num2str(t)));
-                %warning([NDETECT_A_SIG, num2str(t)])
+                if output == 0
+                    %cprintf(WARNING_COLOR, [NDETECT_A_SIG, num2str(t), '\n'])
+                    disp(strcat(NDETECT_A_SIG,num2str(t)));
+                    %warning([NDETECT_A_SIG, num2str(t)])
+                else
+                    fprintf(fileId,[NDETECT_A_SIG,'%d\n'],t);
+                end
             end
         elseif sendVSignal == 1
             pace_param = pacemaker_new(pace_param,0,1, pace_inter);
-            %cprintf(NOTE_COLOR, [SENT_V_SIG, num2str(t), '\n'])
-            disp(strcat(SENT_V_SIG,num2str(t)));
+            if output == 0
+                %cprintf(NOTE_COLOR, [SENT_V_SIG, num2str(t), '\n'])
+                disp(strcat(SENT_V_SIG,num2str(t)));
+            else
+                fprintf(fileId,[SENT_V_SIG,'%d\n'],t);
+            end
                 if pace_param.v_sense
-                    %cprintf(GOOD_COLOR, [DETECT_V_SIG, num2str(t), '\n'])
-                    disp(strcat(DETECT_V_SIG,num2str(t)));
+                    if output == 0
+                        %cprintf(GOOD_COLOR, [DETECT_V_SIG, num2str(t), '\n'])
+                        disp(strcat(DETECT_V_SIG,num2str(t)));
+                    else
+                        fprintf(fileId,[DETECT_V_SIG,'%d\n'],t);
+                    end
                 else
-                    %cprintf(WARNING_COLOR, [NDETECT_V_SIG, num2str(t), '\n'])
-                    disp(strcat(NDETECT_V_SIG,num2str(t)));
-                    %warning([NDETECT_V_SIG, num2str(t)])
+                    if output == 0
+                        %cprintf(WARNING_COLOR, [NDETECT_V_SIG, num2str(t), '\n'])
+                        disp(strcat(NDETECT_V_SIG,num2str(t)));
+                        %warning([NDETECT_V_SIG, num2str(t)])
+                    else
+                        fprintf(fileId,[NDETECT_V_SIG,'%d\n'],t);
+                    end
                 end
         else
             pace_param = pacemaker_new(pace_param,0,0, pace_inter);
         end
    
 end
-disp(' ');
 if plotSignals || plotTimers
     set(gcf, 'PaperPositionMode', 'auto');
 end
+
+    testError = testError + fileError;
+    if fileError
+        testsInError = [testsInError,', ',name];
+        fileError = 0;
+    end
+if output == 0
+    disp(' ');
+else
+    fprintf(fileId,'\n');
+end
+end
+
+if output == 0
+    disp('Complete.');
+else
+    fprintf(fileId,'Results:\n');
+    fprintf(fileId,'Total tests: %d\n', totalFiles);
+    fprintf(fileId,'Total tests failed: %d\tpercentage: %d%%\n',testError,testError/totalFiles*100);
+    fprintf(fileId,'Tests with errors: %s\n',testsInError);
+    fprintf(fileId,'Total early ventricular signals: %d \t average per test: %d\n',total_V_early_errors,total_V_early_errors/totalFiles);
+    fprintf(fileId,'Total early atrial signals: %d \t average per test: %d\n', total_A_early_errors, total_A_early_errors/totalFiles);
+    fprintf(fileId,'Total late ventricular signals: %d \t average per test: %d\n', total_V_late_errors, total_V_late_errors/totalFiles);
+    fprintf(fileId,'Total late atrial signals: %d \t average per test: %d\n', total_A_late_errors, total_A_late_errors/totalFiles);
+    fprintf(fileId,'Total ventricular signals in error: %d \t average per test: %d\n', total_V_wrong_errors, total_V_wrong_errors/totalFiles);
+    fprintf(fileId,'Total atrial signals in error: %d \t average per test: %d\n', total_A_wrong_errors, total_A_wrong_errors/totalFiles);
+    fclose(fileId);
+
+end
+%% functions
+
+    function ventricularOutput()
+         ifVOutput = 0;
+            if nextLine == 1
+                if output == 0
+                    disp(strcat(V_ON,num2str(t)));
+                else
+                    fprintf(fileId,[V_ON,'%d\n'],t);
+                end
+                pace_param.v_pace = 1;
+                ifVOutput = 1;
+            else
+                if allowOffsets
+                    v_lowBound = (nextTime+offset)-tolerance_ventrical;
+                    v_highBound = (nextTime+offset)+tolerance_ventrical;
+                else
+                    v_lowBound = (nextTime)-tolerance_ventrical;
+                    v_highBound = (nextTime)+tolerance_ventrical;
+                end
+                if t < v_lowBound
+                    if pace_param.a_pace == 1
+                        if output == 0
+                            fprintf(2, [A_LATE, num2str(t), '\n'])
+                        else
+                            fprintf(fileId,[A_LATE,'%d\n'],t);
+                        end
+                        %errors
+                        total_A_late_errors = total_A_late_errors + 1; 
+                        fileError = 1;
+                    end
+                    if pace_param.v_pace == 1
+                        if output == 0
+                            fprintf(2, [V_EARLY, num2str(t), '\n'])
+                        else
+                            fprintf(fileId,[V_EARLY,'%d\n'],t);
+                        end
+                        offset = offset + (t-nextTime);
+                        ifVOutput = 1;
+                        
+                        %errors
+                        total_V_early_errors = total_V_early_errors + 1;
+                        fileError = 1;
+                    end
+                elseif t >= v_lowBound && t <= v_highBound
+                    if pace_param.v_pace == 1
+                        offset = offset + (t-nextTime);
+                        if output == 0
+                            disp(strcat(V_ON,num2str(t)));
+                        else 
+                            fprintf(fileId,[V_ON,'%d\n'],t);
+                        end
+                        ifVOutput = 1;
+                    end
+                    if pace_param.a_pace == 1
+                        if nextNextEvent == ATRIAL_OUTPUT
+                            if output == 0
+                                fprintf(2, [A_EARLY, num2str(t), '\n'])
+                            else
+                                fprintf(fileId,[A_EARLY,'%d\n'],t);
+                            end
+                            %errors
+                            total_A_early_errors = total_A_early_errors + 1;
+                            fileError = 1;
+                        else
+                            if output == 0 
+                                fprintf(2, [A_WRONG, num2str(t), '\n'])
+                            else
+                                fprintf(fileId,[A_WRONG,'%d\n'],t);
+                            end
+                            %errors
+                            total_A_wrong_errors = total_A_wrong_errors + 1;
+                            fileError = 1;
+                        end
+                    end
+                elseif t > v_highBound
+                    if pace_param.v_pace == 1
+                        offset = offset + (t-nextTime);
+                        if output == 0
+                            fprintf(2, [V_LATE, num2str(t), '\n'])
+                        else
+                            fprintf(fileId,[V_LATE,'%d\n'],t);
+                        end
+                        ifVOutput = 1;
+                        %errors
+                        total_V_late_errors = total_V_late_errors + 1;
+                        fileError = 1;
+                    end
+                    if pace_param.a_pace == 1
+                        if nextNextEvent == ATRIAL_OUTPUT
+                            if output == 0
+                                fprintf(2, [A_EARLY, num2str(t), '\n'])
+                            else
+                                fprintf(fileId,[A_EARLY,'%d\n'],t);
+                            end
+                            %errors
+                            total_A_early_errors = total_A_early_errors +1;
+                            fileError = 1;
+                        else
+                            if output == 0
+                                fprintf(2, [A_WRONG, num2str(t), '\n'])
+                            else
+                                fprintf(fileId,[A_WRONG,'%d\n'],t);
+                            end
+                            %errors
+                            total_A_wrong_errors = total_A_wrong_errors + 1;
+                            fileError = 1;
+                        end
+                    end
+                end
+            end
+    end
+    function atrialOutput()
+           ifAOutput = 0;
+            if nextLine == 1
+                if output ==0
+                    disp(strcat(A_ON,num2str(t)));
+                else
+                    fprintf(fileId,[A_ON,'%d\n'],t);
+                end
+                pace_param.a_pace = 1;
+                ifAOutput = 1;
+            else
+                if allowOffsets
+                    a_lowBound = (nextTime+offset)-tolerance_atrial;
+                    a_highBound = (nextTime+offset)+tolerance_atrial;
+                else
+                    a_lowBound = (nextTime)-tolerance_atrial;
+                    a_highBound = (nextTime)+tolerance_atrial;
+                end
+                if t < a_lowBound
+                    if pace_param.a_pace == 1
+                        if output == 0
+                            fprintf(2, [A_EARLY, num2str(t), '\n'])
+                        else
+                            fprintf(fileId,[A_EARLY,'%d\n'],t);
+                        end
+                        offset = offset + (t-nextTime);
+                        ifAOutput = 1;
+                        %errors
+                        total_A_early_errors = total_A_early_errors + 1;
+                        fileError = 1;
+                    end
+                    if pace_param.v_pace == 1
+                        if nextNextEvent == VENTRICAL_OUTPUT
+                            if output == 0
+                                fprintf(2, [V_EARLY, num2str(t), '\n'])
+                            else
+                                fprintf(fileId,[V_EARLY,'%d\n'],t);
+                            end
+                            %errors
+                            total_V_early_errors = total_V_early_errors + 1;
+                            fileError = 1;
+                        else
+                            if output == 0
+                                fprintf(2, [V_WRONG, num2str(t), '\n'])
+                            else
+                                fprintf(fileId,[V_WRONG,'%d\n'],t);    
+                            end
+                            %errors
+                            total_V_wrong_errors = total_V_wrong_errors + 1;
+                            fileError = 1;
+                        end
+                    end
+                elseif t >= a_lowBound && t <= a_highBound
+                    if pace_param.a_pace == 1
+                        offset = offset + (t-nextTime);
+                        if output == 0 
+                            disp(strcat(A_ON,num2str(t)));
+                        else
+                            fprintf(fileId,[A_ON,'%d\n'],t);
+                        end
+                        ifAOutput = 1;
+                    end
+                    if pace_param.v_pace == 1
+                        if nextNextEvent == VENTRICAL_OUTPUT
+                            if output == 0                         
+                                fprintf(2, [V_EARLY, num2str(t), '\n'])
+                            else
+                                fprintf(fileId,[V_EARLY,'%d\n'],t);
+                            end
+                            %errors
+                            total_V_early_errors = total_V_early_errors + 1;
+                            fileError = 1;
+                        else
+                            if output == 0
+                                fprintf(2, [V_WRONG, num2str(t), '\n'])
+                            else
+                                fprintf(fileId,[V_WRONG,'%d\n'],t);
+                            end
+                            %errors
+                            total_V_wrong_errors = total_V_wrong_errors + 1;
+                            fileError = 1;
+                        end
+                    end
+                elseif t > a_highBound
+                    if pace_param.a_pace == 1
+                        offset = offset + (t-nextTime);
+                        if output == 0
+                            fprintf(2, [A_LATE, num2str(t), '\n'])
+                        else
+                            fprintf(fileId,[A_LATE,'%d\n'],t);
+                        end
+                        ifAOutput = 1;
+                        %errors
+                        total_A_late_errors = total_A_late_errors + 1;
+                        fileError = 1;
+                    end
+                    if pace_param.v_pace == 1
+                        if nextNextEvent == VENTRICAL_OUTPUT
+                            if output == 0
+                                fprintf(2, [V_EARLY, num2str(t), '\n'])
+                            else
+                                fprintf(fileId,[V_EARLY,'%d\n'],t);
+                            end
+                            %errors
+                            total_V_early_errors = total_V_early_errors + 1;
+                            fileError = 1;
+                        else
+                            if output == 0
+                                fprintf(2, [V_WRONG, num2str(t), '\n'])
+                            else
+                                fprintf(fileId,[V_WRONG,'%d\n'],t);
+                            end
+                            %errors
+                            total_V_wrong_errors = total_V_wrong_errors + 1;
+                            fileError = 1;
+                        end
+                    end
+                end
+            end
+    end
+    
+    function atrialInput()
+        if t == (nextTime + offset)
+            sendASignal = 1;
+        end
+    end
+
+    function ventricularInput()
+        if t == (nextTime + offset)
+                sendVSignal = 1;
+        end
+    end
+
+    function read_next()
+    [nextLine, nextTime, nextEvent,...
+        nextNextTime,nextNextEvent, sample_File] = increment(nextLine, nextTime, nextEvent,...
+        nextNextTime,nextNextEvent, sample_File);       
+    end
+
+    function [nxtLine, nxtTime, nxtEvent, nNTime,nNEvent, smp_File] = increment(nxtLine, nxtTime, nxtEvent, nNTime,nNEvent, smp_File)
+    %increment Summary of this function goes here
+    %   Detailed explanation goes here
+        nxtLine = nxtLine + 1;
+        if nxtLine <= length(smp_File)
+            nxtTime = smp_File(nxtLine,1);
+            nxtEvent = smp_File(nxtLine,2);
+        else
+            nxtEvent = 0;
+        end
+    
+        if nxtLine < length(smp_File)
+            nNTime = smp_File(nxtLine+1,1);
+            nNEvent = smp_File(nxtLine+1,2);
+        else
+            nNTime = 0;
+            nNEvent = 0;    
+        end
+
+    end
+
 end
 

@@ -227,10 +227,6 @@ for k = 1:totalFiles
 %% Loop
 
 t=-1;
-
-disp('begin')
-fileError
-
 while t< total_time   
     t=t+1;
     
@@ -345,7 +341,6 @@ end
         end
    
 end
-    fileError
     testError = testError + fileError;
     if fileError
         testsInError = [testsInError,', ',name];
