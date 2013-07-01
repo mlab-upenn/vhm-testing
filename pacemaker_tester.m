@@ -30,6 +30,11 @@ function [] = pacemaker_tester(filename,pacemaker_param,varargin)
 %   'stepSize' defines the step in ms per each iteration in the test.
 %       parameter is a double or char defining the stepsize. i.e
 %       'stepSize',.1) will set the step to 0.1 ms. Default is 1 ms.
+%   'output' defines where the report should be output to. Parameter is
+%       either 'display' if the results are printed on the matlab command
+%       prompt, or a filename (i.e. 'report.txt') where the report will be
+%       printed to.
+%
 %{
 close all;
 clear;
@@ -46,6 +51,7 @@ total_time = 3000;%ms %define how long you want to run the test.
 tolerance_atrial = 0; %Acceptable tolerance (in ms) for detecting atrial output signals
 tolerance_ventrical = 0; %Acceptable tolerance for detecting ventricular output signals.
 greatestTolerance = max([tolerance_atrial, tolerance_ventrical]);
+output = 0; %0 if output to display, 1 if printing to file.
 %% Decide what to test
 allowOffsets = 0;
 %% Varagins
@@ -127,6 +133,13 @@ allowOffsets = 0;
                     pace_inter = str2num(parameter);
                 elseif isa(parameter,'double')
                     pace_inter = parameter;
+                end
+            elseif strcmpi(argument,'output')
+                parameter = varargin{i+1};
+                if strcmpi(parameter,'display')
+                    output = 0;
+                else
+                    output = 1;
                 end
             else
                 error(['Unknown argument ''',varargin{i},'''']);
