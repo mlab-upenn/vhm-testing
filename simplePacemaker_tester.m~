@@ -546,7 +546,6 @@ end
                                 %skipped the atrial pace
                                 correctTime = getCorrectTime(allowOffsets,offset,nextTime);
                                 writeReport(output,A_SKIP,correctTime,0)
-                                offset = offset + (t-nextNextTime);
                                 read_next(); %skip reading the ventricular pace.
                                 ifAOutput = 1;
                             else

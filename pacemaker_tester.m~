@@ -34,9 +34,7 @@ function [] = pacemaker_tester(filename,pacemaker_param,varargin)
 %       either 'display' if the results are printed on the matlab command
 %       prompt, or a filename (i.e. 'report.txt') where the report will be
 %       printed to.
-%   'seePaceSense' defines if the report should also include if the model
-%       detected A/V stimuli. 0 to disallow or 1 to allow. In terms of black
-%       box testing, this should not be used. Default is not on.
+%   '
 %
 %{
 close all;
@@ -174,11 +172,6 @@ allowOffsets = 0;
                 else
                     output = 1;
                     fileId = fopen(parameter,'w');
-                end
-            elseif strcmpo(argument,'seePaceSense')
-                parameter = varargin{i+1};
-                if parameter == 1
-                    seePaceSense = 1;
                 end
             else
                 error(['Unknown argument ''',varargin{i},'''']);
@@ -479,12 +472,16 @@ while t< total_time
                 read_next(); %see script/ or see function increment
                 ifBoundsPrinted = 0;
             end
+            if fileError
+            end
 % VENTRICAL Output
         case VENTRICAL_OUTPUT
             ventricularOutput() %see script
             if ifVOutput == 1
                 read_next(); %see script/ or see function increment
                 ifBoundsPrinted = 0;
+            end
+            if fileError
             end
 % TODO: Deal with these cases          
         case A_OUTPUT_V_INPUT
@@ -877,30 +874,27 @@ while t< total_time
             end
         elseif sendVSignal == 1
             pace_param = pacemaker_new(pace_param,0,1, pace_inter);
-            if output == 0
-                %cprintf(NOTE_COLOR, [SENT_V_SIG, num2str(t), '\n'])
-                disp(strcat(SENT_V_SIG,num2str(t)));
-            else
-                fprintf(fileId,[SENT_V_SIG,'%d\n'],t);
-            end
+            if seePaceSense
+                if output == 0
+                    %cprintf(NOTE_COLOR, [SENT_V_SIG, num2str(t), '\n'])
+                    disp(strcat(SENT_V_SIG,num2str(t)));
+                else
+                    fprintf(fileId,[SENT_V_SIG,'%d\n'],t);
+                end
                 if pace_param.v_sense
-                    if seePaceSense
-                        if output == 0
-                            %cprintf(GOOD_COLOR, [DETECT_V_SIG, num2str(t), '\n'])
-                            disp(strcat(DETECT_V_SIG,num2str(t)));
-                        else
-                            fprintf(fileId,[DETECT_V_SIG,'%d\n'],t);
-                        end
+                    if output == 0
+                        %cprintf(GOOD_COLOR, [DETECT_V_SIG, num2str(t), '\n'])
+                        disp(strcat(DETECT_V_SIG,num2str(t)));
+                    else
+                        fprintf(fileId,[DETECT_V_SIG,'%d\n'],t);
                     end
                 else
-                    if seePaceSense
-                        if output == 0
-                            %cprintf(WARNING_COLOR, [NDETECT_V_SIG, num2str(t), '\n'])
-                            disp(strcat(NDETECT_V_SIG,num2str(t)));
-                            %warning([NDETECT_V_SIG, num2str(t)])
-                        else
-                            fprintf(fileId,[NDETECT_V_SIG,'%d\n'],t);
-                        end
+                    if output == 0
+                        %cprintf(WARNING_COLOR, [NDETECT_V_SIG, num2str(t), '\n'])
+                        disp(strcat(NDETECT_V_SIG,num2str(t)));
+                        %warning([NDETECT_V_SIG, num2str(t)])
+                    else
+                        fprintf(fileId,[NDETECT_V_SIG,'%d\n'],t);
                     end
                 end
         else
@@ -1179,15 +1173,15 @@ end
     function writeReport(output,sentence,correctTime,good)
         if good
             if output == 0
-                disp([sentence, num2str(t), '. (Expected at t=', num2str(correctTime),')']);
+                disp([sentence, num2str(t), '. Expected at t=', num2str(correctTime)]);
             else
-                fprintf(fileId,[sentence,'%d. (Expected at t=%d)\n'],t,correctTime);
+                fprintf(fileId,[sentence,'%d. Expected at t=%d\n'],t,correctTime);
             end
         else
             if output == 0
-                fprintf(2, [sentence, num2str(t),'. (Expected at t=',num2str(correctTime), ')\n'])
+                fprintf(2, [sentence, num2str(t),'. Expected at t=',num2str(correctTime), '\n'])
             else
-                fprintf(fileId,[sentence,'%d. (Expected at t=%d)\n'],t,correctTime);
+                fprintf(fileId,[sentence,'%d. Expected at t=%d\n'],t,correctTime);
             end
         end
     end
