@@ -22,7 +22,7 @@ new_pace.pAVI_cur = 250; %unblanked region can detect atrial signals, but cannot
 new_pace.pAVI_def = 250;
 new_pace.sAVI_cur = 250;
 new_pace.sAVI_def = 250;
-new_pace.AVI = 'on';
+new_pace.AVI = 'P';
 new_pace.ABP = 50; %blocks all signals detected by atrial probe in AVI
 %ventricular timers after atrial stimulus
 new_pace.PAVB = 50; %blocks ventricular signals in AVI
