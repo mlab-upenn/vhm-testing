@@ -1141,18 +1141,31 @@ end
     function atrialInput()
         %check instances where there is incorrect pacing
         if pace_param.v_pace == 1
-            correctTime = NaN;
-            writeReport(output,V_WRONG,correctTime,0)
-            %errors
-            total_V_wrong_errors = total_V_wrong_errors + 1;
-            fileError = 1;
+            if nextNextEvent == VENTRICAL_OUTPUT
+                v_lowBound = (nextTime+offset)-tolerance_ventrical;
+                if nextNextTime >= v_lowBound
+                    
+                end
+            else
+                correctTime = NaN;
+                writeReport(output,V_WRONG,correctTime,0)
+                %errors
+                total_V_wrong_errors = total_V_wrong_errors + 1;
+                fileError = 1;
+            end
         end
         if pace_param.a_pace == 1
-            correctTime = NaN;
-            writeReport(output,A_WRONG,correctTime,0)
-            %errors
-            total_A_wrong_errors = total_A_wrong_errors + 1;
-            fileError = 1;
+            if nextNextEvent == ATRIAL_OUTPUT
+                a_lowBound = (nextTime+offset)-tolerance_atrial;
+                if nextNextTime >= a_lowBound
+                end
+            else
+                correctTime = NaN;
+                writeReport(output,A_WRONG,correctTime,0)
+                %errors
+                total_A_wrong_errors = total_A_wrong_errors + 1;
+                fileError = 1;
+            end
         end
         %deliver the sense when the time is right
         if t == (nextTime + offset)
@@ -1163,25 +1176,37 @@ end
     function ventricularInput()
         %check instances where there is incorrect pacing
         if pace_param.v_pace == 1
-            correctTime = NaN;
-            writeReport(output,V_WRONG,correctTime,0)
-            %errors
-            total_V_wrong_errors = total_V_wrong_errors + 1;
-            fileError = 1;
+            if nextNextEvent == VENTRICAL_OUTPUT
+                v_lowBound = (nextTime+offset)-tolerance_ventrical;
+                if nextNextTime >= v_lowBound
+                    
+                end
+            else
+                correctTime = NaN;
+                writeReport(output,V_WRONG,correctTime,0)
+                %errors
+                total_V_wrong_errors = total_V_wrong_errors + 1;
+                fileError = 1;
+            end
         end
         if pace_param.a_pace == 1
-            correctTime = NaN;
-            writeReport(output,A_WRONG,correctTime,0)
-            %errors
-            total_A_wrong_errors = total_A_wrong_errors + 1;
-            fileError = 1;
+            if nextNextEvent == ATRIAL_OUTPUT
+                a_lowBound = (nextTime+offset)-tolerance_atrial;
+                if nextNextTime >= a_lowBound
+                end
+            else
+                correctTime = NaN;
+                writeReport(output,A_WRONG,correctTime,0)
+                %errors
+                total_A_wrong_errors = total_A_wrong_errors + 1;
+                fileError = 1;
+            end
         end
         %deliver the sense when the time is right
         if t == (nextTime + offset)
                 sendVSignal = 1;
         end
     end
-
     function read_next()
     [nextLine, nextTime, nextEvent,...
         nextNextTime,nextNextEvent, sample_File] = increment(nextLine, nextTime, nextEvent,...
