@@ -151,6 +151,9 @@ if pace_param.VSP==1 && pace_param.AT>=110 && pace_param.A_det==1
     v_p=1;
     pace_param.VSP=0;
 end
+if pace_param.VT>=pace_param.TLRI
+    v_p=1;
+end
 if pace_param.VSP==0 && pace_param.AT>=pace_param.TAVI && pace_param.VT>=pace_param.TURI && pace_param.A_det==1
     v_p=1;
 end
