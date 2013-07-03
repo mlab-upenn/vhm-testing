@@ -87,26 +87,26 @@ v_s=0;
 v_p=0;
 a_r=0;
 v_r=0;
+
 %% Two clocks
 % A timer
 if pace_param.a_sense || pace_param.a_pace
     pace_param.AT=0;
 else
-    pace_param.AT=pace_param.AT+1;
+    pace_param.AT=pace_param.AT+pace_inter;
 end
 
 % V timer
 if pace_param.v_sense || pace_param.v_pace
     pace_param.VT=0;
 else
-    pace_param.VT=pace_param.VT+1;
+    pace_param.VT=pace_param.VT+pace_inter;
 end
 %% Filters
 % A filter
 if A_get
     if pace_param.AT>=pace_param.PAARP && pace_param.VT>=pace_param.PVARP
         a_s=1;
-       
     end
     if pace_param.AT>=pace_param.PAAB && pace_param.AT<=pace_param.PAARP
         a_r=1;
@@ -154,6 +154,7 @@ end
 if pace_param.VT>=pace_param.TLRI
     v_p=1;
 end
+%%TODO: fix this issue.                                   %%this statement causes issues
 if pace_param.VSP==0 && pace_param.AT>=pace_param.TAVI && pace_param.VT>=pace_param.TURI && pace_param.A_det==1
     v_p=1;
 end
