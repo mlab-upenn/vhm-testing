@@ -123,16 +123,16 @@ end
 % V filter
 if V_get
     pace_param.PVARP=pace_param.PVARP_def;
-    if pace_param.AT>=pace_param.PAVB && pace_param.VT>=pace_param.PVVRP
+    if pace_param.AT>=pace_param.VSP_thresh && pace_param.VT>=pace_param.PVVRP
         v_s=1;
     end
-    if pace_param.VT>=pace_param.VSP_thresh && pace_param.VT<=pace_param.PVVRP
+    if pace_param.VT>=pace_param.PVVB && pace_param.VT<=pace_param.PVVRP
         v_r=1;
         pace_param.PVARP=400;
     end
     if pace_param.AT<=pace_param.PAVB
     end
-    if pace_param.VT>=pace_param.PVVB && pace_param.VT<=pace_param.VSP_thresh
+    if pace_param.AT<=pace_param.VSP_thresh
         pace_param.VSP=1;
     end
     if pace_param.VT<=pace_param.PVVB
