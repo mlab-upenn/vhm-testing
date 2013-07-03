@@ -332,6 +332,7 @@ end
     A_OFFSET_COLOR = [0 204/255 102/255];
     V_BOUND_COLOR = [153/255 204/255 1];
     V_OFFSET_COLOR = 'c';
+    ERROR_COLOR = 'r';
     ALPHA_FACE_VALUE = 0.1;
     ALPHA_EDGE_VALUE = 0.25;
     ifBoundsPrinted = 0;
@@ -370,7 +371,6 @@ end
     
     WARNING_COLOR = [229/255 222/255 22/255];
     GOOD_COLOR = 'Comments';
-    ERROR_COLOR = [1 0 0];
     NOTE_COLOR = [0 0 1];
 %Global Variables
     nextLine = 0; %variable to determine which line in the file is being processed
@@ -446,7 +446,10 @@ while t< total_time
         switch nextEvent
 % Atrial Input        
         case ATRIAL_INPUT
-            atrialInput() %see script
+            redFlag = atrialInput(); %see script
+            if redFlag
+                fileError = 1;
+            end
             if sendASignal == 1;
                 if plotSignals
                     if plotTimers
@@ -460,7 +463,10 @@ while t< total_time
             end
 % Ventrical Input            
         case VENTRICAL_INPUT
-            ventricularInput() %see script
+            redFlag = ventricularInput(); %see script
+            if redFlag
+                fileError = 1;
+            end
             if sendVSignal == 1;
                 if plotSignals
                     if plotTimers
@@ -474,22 +480,34 @@ while t< total_time
             end
 % Atrial Output           
         case ATRIAL_OUTPUT
-            atrialOutput() %see script
+            redFlag = atrialOutput(); %see script
+            if redFlag
+                fileError = 1;
+            end
             if ifAOutput == 1 
                 read_next(); %see script/ or see function increment
                 ifBoundsPrinted = 0;
             end
 % VENTRICAL Output
         case VENTRICAL_OUTPUT
-            ventricularOutput() %see script
+            redFlag = ventricularOutput(); %see script
+            if redFlag
+                fileError = 1;
+            end
             if ifVOutput == 1
                 read_next(); %see script/ or see function increment
                 ifBoundsPrinted = 0;
             end
 % TODO: Deal with these cases          
         case A_OUTPUT_V_INPUT
-            atrialOutput() 
-            ventricularInput()
+            redFlag = atrialOutput();
+            if redFlag
+                fileError = 1;
+            end
+            redFlag = ventricularInput();
+            if redFlag
+                fileError = 1;
+            end
     %        if pace_param.a_pace ==1
     %        end      
             if ifAOutput == 1
@@ -560,7 +578,7 @@ while t< total_time
                         ifBoundsPrinted = 1;
                     end
             end
-    
+    %% plot signals
     data=0;
         % a_pace
         if pace_param.a_pace
@@ -572,7 +590,11 @@ while t< total_time
                 subplot(2,1,1)
             end
             arrow([t,0],[t,data],'Length', roLength, 'TipAngle',roTipAngle,'EdgeColor','k','FaceColor',faceColor);
-            text(t,height,name,'FontName', TEXT_FONT,'FontWeight',TEXT_FONT_WEIGHT,'Fontsize', TEXT_FONT_SIZE); 
+            text(t,height,name,'FontName', TEXT_FONT,'FontWeight',TEXT_FONT_WEIGHT,'Fontsize', TEXT_FONT_SIZE);
+            
+            if redFlag
+                makeErrorBlock();
+            end
         end
         % v_pace
         if pace_param.v_pace               
@@ -585,6 +607,10 @@ while t< total_time
             end
             arrow([t,0],[t,data],'Length', roLength, 'TipAngle',roTipAngle,'EdgeColor','k','FaceColor',faceColor);
             text(t,height,name,'FontName', TEXT_FONT,'FontWeight',TEXT_FONT_WEIGHT,'Fontsize', TEXT_FONT_SIZE); 
+            
+            if redFlag
+                makeErrorBlock();
+            end
         end
         % a_sense
         if pace_param.a_sense
@@ -597,6 +623,10 @@ while t< total_time
             end
             arrow([t,0],[t,data],'Length', roLength, 'TipAngle',roTipAngle,'EdgeColor','k','FaceColor',faceColor);
             text(t,height,name,'FontName', TEXT_FONT,'FontWeight',TEXT_FONT_WEIGHT,'Fontsize', TEXT_FONT_SIZE); 
+            
+            if redFlag
+                makeErrorBlock();
+            end
         end
         % v_sense
         if pace_param.v_sense
@@ -609,6 +639,10 @@ while t< total_time
             end
             arrow([t,0],[t,data],'Length', roLength, 'TipAngle',roTipAngle,'EdgeColor','k','FaceColor',faceColor);
             text(t,height,name,'FontName', TEXT_FONT,'FontWeight',TEXT_FONT_WEIGHT,'Fontsize', TEXT_FONT_SIZE); 
+            
+            if redFlag
+                makeErrorBlock();
+            end
         end
         %a_ref
         if pace_param.a_ref
@@ -621,6 +655,10 @@ while t< total_time
             end
             arrow([t,0],[t,data],'Length', roLength, 'TipAngle',roTipAngle,'EdgeColor','k','FaceColor',faceColor);
             text(t,height,name,'FontName', TEXT_FONT,'FontWeight',TEXT_FONT_WEIGHT,'Fontsize', TEXT_FONT_SIZE); 
+            
+            if redFlag
+                makeErrorBlock();
+            end
         end
         % v_ref
         if pace_param.v_ref
@@ -633,6 +671,10 @@ while t< total_time
             end
             arrow([t,0],[t,data],'Length', roLength, 'TipAngle',roTipAngle,'EdgeColor','k','FaceColor',faceColor);
             text(t,height,name,'FontName', TEXT_FONT,'FontWeight',TEXT_FONT_WEIGHT,'Fontsize', TEXT_FONT_SIZE); 
+            
+            if redFlag
+                makeErrorBlock();
+            end
         end
    end
    %% Plot Timer States
@@ -925,6 +967,15 @@ while t< total_time
     end        
 %if error was found, exit the test
     if fileError
+        theEnd = nextTime +offset + greatestTolerance + 300;
+        if plotSignals && plotTimers
+            subplot(2,1,1)
+            set(gca,'Ylim',[-4,4],'Xlim',[0,theEnd]);
+            subplot(2,1,2)
+            set(gca,'Ylim',[-4,4],'Xlim',[0,theEnd]);
+        elseif plotSignals || plotTimers
+            set(gca,'Ylim',[-4,4],'Xlim',[0,theEnd]);
+        end
         break;
     end
         
@@ -947,24 +998,36 @@ end
 
 if output == 0
     disp('Complete.');
+    disp('Results:');
+    disp(['Total tests: ', num2str(totalFiles)]);
+    disp(['Total tests failed: ',num2str(testError),'   percentage: ',num2str(testError/totalFiles*100),'%']);
+    disp(['Tests with errors: ',num2str(testsInError)]);
+    disp(['Total early ventricular pacing: ',num2str(total_V_early_errors),'   average per test: ',num2str(total_V_early_errors/totalFiles)]);
+    disp(['Total early atrial pacing: ',num2str(total_A_early_errors),'   average per test: ', num2str(total_A_early_errors/totalFiles)]);
+    disp(['Total late ventricular pacing: ',num2str(total_V_late_errors),'   average per test: ', num2str(total_V_late_errors/totalFiles)]);
+    disp(['Total late atrial pacing: ',num2str(total_A_late_errors),'   average per test: ', num2str(total_A_late_errors/totalFiles)]);
+    disp(['Total ventricular pacing in error: ',num2str(total_V_wrong_errors),'   average per test: ',num2str(total_V_wrong_errors/totalFiles)]);
+    disp(['Total atrial pacing in error: ',num2str(total_A_wrong_errors),'   average per test: ',num2str(total_A_wrong_errors/totalFiles)]);
+    disp(' ');
 else
     fprintf(fileId,'Results:\n');
     fprintf(fileId,'Total tests: %d\n', totalFiles);
     fprintf(fileId,'Total tests failed: %d\tpercentage: %d%%\n',testError,testError/totalFiles*100);
     fprintf(fileId,'Tests with errors: %s\n',testsInError);
-    fprintf(fileId,'Total early ventricular signals: %d \t average per test: %d\n',total_V_early_errors,total_V_early_errors/totalFiles);
-    fprintf(fileId,'Total early atrial signals: %d \t average per test: %d\n', total_A_early_errors, total_A_early_errors/totalFiles);
-    fprintf(fileId,'Total late ventricular signals: %d \t average per test: %d\n', total_V_late_errors, total_V_late_errors/totalFiles);
-    fprintf(fileId,'Total late atrial signals: %d \t average per test: %d\n', total_A_late_errors, total_A_late_errors/totalFiles);
-    fprintf(fileId,'Total ventricular signals in error: %d \t average per test: %d\n', total_V_wrong_errors, total_V_wrong_errors/totalFiles);
-    fprintf(fileId,'Total atrial signals in error: %d \t average per test: %d\n', total_A_wrong_errors, total_A_wrong_errors/totalFiles);
+    fprintf(fileId,'Total early ventricular pacing: %d \t average per test: %d\n',total_V_early_errors,total_V_early_errors/totalFiles);
+    fprintf(fileId,'Total early atrial pacing: %d \t average per test: %d\n', total_A_early_errors, total_A_early_errors/totalFiles);
+    fprintf(fileId,'Total late ventricular pacing: %d \t average per test: %d\n', total_V_late_errors, total_V_late_errors/totalFiles);
+    fprintf(fileId,'Total late atrial pacing: %d \t average per test: %d\n', total_A_late_errors, total_A_late_errors/totalFiles);
+    fprintf(fileId,'Total ventricular pacing in error: %d \t average per test: %d\n', total_V_wrong_errors, total_V_wrong_errors/totalFiles);
+    fprintf(fileId,'Total atrial pacing in error: %d \t average per test: %d\n', total_A_wrong_errors, total_A_wrong_errors/totalFiles);
     fclose(fileId);
 
 end
 %% functions
 
-    function ventricularOutput()
+    function redFlag = ventricularOutput()
          ifVOutput = 0;
+         redFlag = 0;
             if nextLine == 1
                 correctTime = nextTime;
                 writeReport(output,V_ON,correctTime,1)
@@ -985,7 +1048,7 @@ end
                         
                         %errors
                         total_A_late_errors = total_A_late_errors + 1; 
-                        fileError = 1;
+                        redFlag = 1;
                     end
                     if pace_param.v_pace == 1
                         correctTime = getCorrectTime(allowOffsets,offset,nextTime);
@@ -995,7 +1058,7 @@ end
                         
                         %errors
                         total_V_early_errors = total_V_early_errors + 1;
-                        fileError = 1;
+                        redFlag = 1;
                     end
                 elseif t >= v_lowBound && t <= v_highBound
                     if pace_param.v_pace == 1
@@ -1010,13 +1073,13 @@ end
                             writeReport(output,A_EARLY,correctTime,0)
                             %count errors
                             total_A_early_errors = total_A_early_errors + 1;
-                            fileError = 1;
+                            redFlag = 1;
                         else
                             correctTime = NaN;
                             writeReport(output,A_WRONG,correctTime,0)
                             %count errors
                             total_A_wrong_errors = total_A_wrong_errors + 1;
-                            fileError = 1;
+                            redFlag = 1;
                         end
                     end
                 elseif t > v_highBound
@@ -1027,7 +1090,7 @@ end
                         ifVOutput = 1;
                         %errors
                         total_V_late_errors = total_V_late_errors + 1;
-                        fileError = 1;
+                        redFlag = 1;
                     end
                     if pace_param.a_pace == 1
                         if nextNextEvent == ATRIAL_OUTPUT
@@ -1035,23 +1098,24 @@ end
                             writeReport(output,A_EARLY,correctTime,0)
                             %errors
                             total_A_early_errors = total_A_early_errors +1;
-                            fileError = 1;
+                            redFlag = 1;
                         else
                             correctTime = NaN;
                             writeReport(output,A_WRONG,correctTime,0)
                             %errors
                             total_A_wrong_errors = total_A_wrong_errors + 1;
-                            fileError = 1;
+                            redFlag = 1;
                         end
                     end
                 end
             end
     end
-    function atrialOutput()
+    function redFlag = atrialOutput()
            ifAOutput = 0;
+           redFlag = 0;
             if nextLine == 1 %if first line in test
                 correctTime = nextTime;
-                writeReport(output,A_ON,correctTime)
+                writeReport(output,A_ON,correctTime,1)
                 pace_param.a_pace = 1;
                 ifAOutput = 1;
             else
@@ -1070,7 +1134,7 @@ end
                         ifAOutput = 1;
                         %errors
                         total_A_early_errors = total_A_early_errors + 1;
-                        fileError = 1;
+                        redFlag = 1;
                     end
                     if pace_param.v_pace == 1
                         if nextNextEvent == VENTRICAL_OUTPUT
@@ -1078,13 +1142,13 @@ end
                             writeReport(output,V_EARLY,correctTime,0)
                             %errors
                             total_V_early_errors = total_V_early_errors + 1;
-                            fileError = 1;
+                            redFlag = 1;
                         else
                             correctTime = NaN;
                             writeReport(output,V_WRONG,correctTime,0)
                             %errors
                             total_V_wrong_errors = total_V_wrong_errors + 1;
-                            fileError = 1;
+                            redFlag = 1;
                         end
                     end
                 elseif t >= a_lowBound && t <= a_highBound
@@ -1100,13 +1164,13 @@ end
                             writeReport(output,V_EARLY,correctTime,0)
                             %errors
                             total_V_early_errors = total_V_early_errors + 1;
-                            fileError = 1;
+                            redFlag = 1;
                         else
                             correctTime = NaN;
                             writeReport(output,V_WRONG,correctTime,0)
                             %errors
                             total_V_wrong_errors = total_V_wrong_errors + 1;
-                            fileError = 1;
+                            redFlag = 1;
                         end
                     end
                 elseif t > a_highBound
@@ -1117,7 +1181,7 @@ end
                         ifAOutput = 1;
                         %errors
                         total_A_late_errors = total_A_late_errors + 1;
-                        fileError = 1;
+                        redFlag = 1;
                     end
                     if pace_param.v_pace == 1
                         if nextNextEvent == VENTRICAL_OUTPUT
@@ -1125,34 +1189,35 @@ end
                             writeReport(output,V_EARLY,correctTime,0)
                             %errors
                             total_V_early_errors = total_V_early_errors + 1;
-                            fileError = 1;
+                            redFlag = 1;
                         else
                             correctTime = NaN;
                             writeReport(output,V_WRONG,correctTime,0)
                             %errors
                             total_V_wrong_errors = total_V_wrong_errors + 1;
-                            fileError = 1;
+                            redFlag = 1;
                         end
                     end
                 end
             end
     end
     
-    function atrialInput()
+    function redFlag = atrialInput()
         %check instances where there is incorrect pacing
+            redFlag = 0;
         if pace_param.v_pace == 1
             correctTime = NaN;
             writeReport(output,V_WRONG,correctTime,0)
             %errors
             total_V_wrong_errors = total_V_wrong_errors + 1;
-            fileError = 1;
+            redFlag = 1;
         end
         if pace_param.a_pace == 1
             correctTime = NaN;
             writeReport(output,A_WRONG,correctTime,0)
             %errors
             total_A_wrong_errors = total_A_wrong_errors + 1;
-            fileError = 1;
+            redFlag = 1;
         end
         %deliver the sense when the time is right
         if t == (nextTime + offset)
@@ -1160,21 +1225,22 @@ end
         end
     end
 
-    function ventricularInput()
+    function redFlag = ventricularInput()
         %check instances where there is incorrect pacing
+            redFlag = 0;
         if pace_param.v_pace == 1
             correctTime = NaN;
             writeReport(output,V_WRONG,correctTime,0)
             %errors
             total_V_wrong_errors = total_V_wrong_errors + 1;
-            fileError = 1;
+            redFlag = 1;
         end
         if pace_param.a_pace == 1
             correctTime = NaN;
             writeReport(output,A_WRONG,correctTime,0)
             %errors
             total_A_wrong_errors = total_A_wrong_errors + 1;
-            fileError = 1;
+            redFlag = 1;
         end
         %deliver the sense when the time is right
         if t == (nextTime + offset)
@@ -1211,18 +1277,19 @@ end
     function writeReport(output,sentence,correctTime,good)
         if good
             if output == 0
-                disp([sentence, num2str(t), '. (Expected at t=', num2str(correctTime),')']);
+                disp([sentence, num2str(t), '. (Expected at t=', num2str(correctTime),'. Misalignment: ',num2str(t-correctTime),')']);
             else
-                fprintf(fileId,[sentence,'%d. (Expected at t=%d)\n'],t,correctTime);
+                fprintf(fileId,[sentence,'%d. (Expected at t=%d. Misalignment: %d)\n'],t,correctTime, t-correctTime);
             end
         else
             if output == 0
-                fprintf(2, [sentence, num2str(t),'. (Expected at t=',num2str(correctTime), ')\n'])
+                fprintf(2, [sentence, num2str(t),'. (Expected at t=',num2str(correctTime), '. Misalignment: ',num2str(t-correctTime),')\n'])
             else
-                fprintf(fileId,[sentence,'%d. (Expected at t=%d)\n'],t,correctTime);
+                fprintf(fileId,[sentence,'%d. (Expected at t=%d. Misalignment: %d)\n'],t,correctTime, t-correctTime);
             end
         end
     end
+
     function correctTime = getCorrectTime(allowOffsets,offset,time)
          if allowOffsets
              correctTime = time + offset;
@@ -1230,6 +1297,12 @@ end
              correctTime = time;
          end
          
+    end
+
+    function makeErrorBlock()
+        high = t+5;
+        low  = t-5;
+        patch([low,high,high,low],[-4 -4 0 0],ERROR_COLOR,'EdgeColor', ERROR_COLOR,'EdgeAlpha',ALPHA_EDGE_VALUE,'FaceAlpha',ALPHA_FACE_VALUE);
     end
 end
 
