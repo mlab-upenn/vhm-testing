@@ -740,7 +740,7 @@ while t< total_time
             text(t,height,name,'FontName', TEXT_FONT,'FontWeight',TEXT_FONT_WEIGHT,'Fontsize', TEXT_FONT_SIZE);
             
             if redFlag
-                makeErrorBlock('a');
+                makeErrorBlock();
             end
         end
         % v_pace
@@ -756,7 +756,7 @@ while t< total_time
             text(t,height,name,'FontName', TEXT_FONT,'FontWeight',TEXT_FONT_WEIGHT,'Fontsize', TEXT_FONT_SIZE); 
             
             if redFlag
-                makeErrorBlock('v');
+                makeErrorBlock();
             end
         end
         % a_sense
@@ -772,7 +772,7 @@ while t< total_time
             text(t,height,name,'FontName', TEXT_FONT,'FontWeight',TEXT_FONT_WEIGHT,'Fontsize', TEXT_FONT_SIZE); 
             
             if redFlag
-                makeErrorBlock('a');
+                makeErrorBlock();
             end
         end
         % v_sense
@@ -820,7 +820,7 @@ while t< total_time
             text(t,height,name,'FontName', TEXT_FONT,'FontWeight',TEXT_FONT_WEIGHT,'Fontsize', TEXT_FONT_SIZE); 
             
             if redFlag
-                makeErrorBlock('v');
+                makeErrorBlock();
             end
         end
    end
@@ -1453,9 +1453,9 @@ end
     function makeErrorBlock(type)
         high = t+5;
         low  = t-5;
-        if strcmp(type,'v')      
+        if strcmp(type,'a')      
             patch([low,high,high,low],[-4 -4 0 0],ERROR_COLOR,'EdgeColor', ERROR_COLOR,'EdgeAlpha',ALPHA_EDGE_VALUE,'FaceAlpha',ALPHA_FACE_VALUE);
-        elseif strcmp(type,'a')
+        elseif strcmp(type,'v')
             patch([low,high,high,low],[0 0 4 4],ERROR_COLOR,'EdgeColor', ERROR_COLOR,'EdgeAlpha',ALPHA_EDGE_VALUE,'FaceAlpha',ALPHA_FACE_VALUE);
         end
    end
