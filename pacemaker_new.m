@@ -92,6 +92,7 @@ v_r=0;
 % A timer
 if pace_param.a_sense || pace_param.a_pace
     pace_param.AT=0;
+    pace_param.A_det=1;
 else
     pace_param.AT=pace_param.AT+pace_inter;
 end
@@ -99,6 +100,7 @@ end
 % V timer
 if pace_param.v_sense || pace_param.v_pace
     pace_param.VT=0;
+    pace_param.A_det=0;
 else
     pace_param.VT=pace_param.VT+pace_inter;
 end
@@ -168,10 +170,7 @@ pace_param.v_sense=v_s;
 pace_param.v_pace=v_p;
 pace_param.a_ref=a_r;
 pace_param.v_ref=v_r;
-if a_s || a_p
-    pace_param.A_det=1;
 
-end
 
 
 
