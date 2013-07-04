@@ -4,7 +4,7 @@ clc;
 load Medtronic_tests/medtronic_test_1-75.mat
 load edge_cov.mat
 load PM_new.mat
-load initializer_v2.mat
+load initializer.mat
 
 index = [1:29, 31:34, 36:39, 40:43];%, 45:75]; 
 files = cell(length(index),1);
@@ -15,4 +15,4 @@ for i = 1:length(index)
     files{i} = file;
 end
 
-pacemaker_tester(files,initializer_v2,pace_param,'plot','signals','tolerances',[5,5],'allowOffset', 1)
+pacemaker_tester(files,initializer,pace_param,'plot','signals','tolerances',[5,5],'allowOffset', 1)
