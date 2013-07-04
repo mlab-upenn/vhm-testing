@@ -1,7 +1,9 @@
-function [] = pacemaker_tester(filename,pacemaker_param,varargin)
+function [] = pacemaker_tester(filename,initializer,pacemaker_param,varargin)
 %pacemaker_tester takes in:
 %   filename, a char array of the name of a file that contains the test 
 %       data.
+%   initializer, a char arry (or matrix) of the name of a file that contains the
+%               initializer data
 %   pacemaker_param, a structure defining pacemaker parameters.
 %   and additional arguments.
 %
@@ -175,7 +177,7 @@ allowOffsets = 0;
                     output = 1;
                     fileId = fopen(parameter,'w');
                 end
-            elseif strcmpo(argument,'seePaceSense')
+            elseif strcmpi(argument,'seePaceSense')
                 parameter = varargin{i+1};
                 if parameter == 1
                     seePaceSense = 1;
@@ -392,8 +394,7 @@ end
     nextNextTime = 0; % the next time for the event after the expected event
     nextEvent = 0; %The next type of event, from 1-4
     nextNextEvent = 0; %The next next type of event, from 1-4  
-%% Signal occurences
-    read_next(); %see script/ or see function increment
+
 %% PreDraw Graphs
 if plotSignals || plotTimers
     figure;
@@ -433,7 +434,60 @@ if plotSignals || plotTimers
         end
     end
 end
+%% initialize
+if isa(initializer, 'double')
+    initializer_File = initializer;
+elseif isa(initializer,'char')
+    [pa fi extension] = fileparts(initializer);
+    if strcmp(extension,'.txt')
+        fid = fopen(initializer);
+        initializer_File = fscanf(fid,'%d %d',[2,inf])';
+    else
+        error(['Unsupported initializer file format ''',ext,'''']);
+    end
+else
+    error(['Unsupported initializer file format ''',inputname(1),'''']);
+end
+t = 0;
+lin = 0;
+event = 0;
+time = 0;
+nxtTime = 0;
+nxtEvent = 0;
+initializer_next();
+if output == 0
+    disp('initializing');
+    disp(' ');
+end
+while t < initializer_File(end,1) + 100
+    sendASignal = 0;
+    sendVSignal = 0;
+    switch event
+        case ATRIAL_INPUT
+            redFlag = atrialInput();
+            if sendASignal == 1
+                initializer_next();
+                pace_param = pacemaker_new(pace_param,1,0, pace_inter);
+            else
+                pace_param = pacemaker_new(pace_param,0,0, pace_inter);
+            end
+        case VENTRICAL_INPUT
+            redFlag = ventricularInput();
+            if sendVSignal == 1
+                initializer_next();
+                pace_param = pacemaker_new(pace_param,0,1, pace_inter);
+            else
+                pace_param = pacemaker_new(pace_param,0,0, pace_inter);
+            end
+    end
+    
+    t= t+1;
+end
+if output == 0
+    disp('starting test')
+end
 %% Loop
+read_next(); %see script/ or see function increment
 t=-1;
 
 while t< total_time
@@ -458,7 +512,7 @@ while t< total_time
                     arrow([t,0],[t,SIGN_MAGNITUDE],'Length', roLength, 'TipAngle',roTipAngle,'EdgeColor','k','FaceColor','y');
                     text(t+10,SIGN_MAGNITUDE+0.4,'A_{Signal}','FontName', INPUT_FONT,'FontWeight',INPUT_FONT_WEIGHT,'Fontsize', INPUT_FONT_SIZE); 
                 end
-                read_next; %see script/ or see function increment
+                read_next(); %see script/ or see function increment
                 ifBoundsPrinted = 0;
             end
 % Ventrical Input            
@@ -1247,7 +1301,11 @@ end
                 sendVSignal = 1;
         end
     end
-
+    function initializer_next()
+    [lin, time, event,...
+        nxtTime,nxtEvent, initializer_File] = increment(lin, time, event,...
+        nxtTime,nxtEvent, initializer_File);
+    end
     function read_next()
     [nextLine, nextTime, nextEvent,...
         nextNextTime,nextNextEvent, sample_File] = increment(nextLine, nextTime, nextEvent,...
