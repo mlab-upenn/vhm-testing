@@ -9,6 +9,7 @@ PVC-Refractory Issue: The pacemaker did not know the Ventricular signal was a po
 Skipped V Pace: A V Pace was skipped, and an A Pace occurred
 VSP Issue: The pacemaker assumed a V signal occurred out of the blocking period and 			initiated ventricular safety pacing
 
+Latest revision: 7/5/2013 at 1:32 pm EST
+Fixed Atrial Pace Begin issue in the pacemaker tester code. The test in the atrial pace begin folder passed, and so was removed.
 
-
-Lastest revision: 7/5/2013 at 12:41 pm EST
+revision: 7/5/2013 at 12:41 pm EST
