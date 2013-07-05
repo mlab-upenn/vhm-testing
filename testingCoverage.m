@@ -58,6 +58,7 @@ for i = 1:length(index)
             pace_test.TAVI = 200;
             pace_test.PAARP = 200;
             pace_test.PVARP = 500;
+            pace_test.PVARP_def = 500;
             pace_test.PVVRP = 500;
             pace_test.TURI = 750;   
     end
@@ -203,6 +204,7 @@ pace_test = pace_param;
 pace_test.TAVI = 200;
 pace_test.PAARP = 200;
 pace_test.PVARP = 500;
+pace_test.PVARP_def = 500;
 pace_test.PVVRP = 500;
 pace_test.TURI = 750; 
 pacemaker_tester(test_File_74,initializer,pace_test,'plot','signals','tolerances',[5,5],'allowOffset', 1,'seePaceSense',1,'output','test_File_74_results.txt')
