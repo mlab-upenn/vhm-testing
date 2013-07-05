@@ -11,8 +11,10 @@ function [] = pacemaker_tester(filename,initializer,pacemaker_param,varargin)
 %varagin
 %   'plot' plots the data. 
 %       'signals' or 0 plots only the signals
-%       'timers' or 1 plots only the timers
-%       'all' or 2 plots both
+%       'timers' or 1 plots only the timers. NOTE: This has been made ineffective
+%           with the new pacemaker model
+%       'all' or 2 plots both. NOTE: This has been made ineffective with 
+%           the new pacemaker model 
 %   'runTo' defines the length of the test (i.e. if the test to run up to 3000 ms, etc.).
 %       Default is to stop the test once the test file has an error, or until the file has finished reading.   
 %       parameter is a double or char defining the time in ms when to stop.
@@ -91,7 +93,7 @@ fileError = 0;
 %% Decide what to test
 allowOffsets = 0;
 %% Varagins
-%take into account multiple argumemts
+%take into account multiple arguments, and adjust the test accordingly
     if ~isempty(varargin)
         for i = 1:2:length(varargin)
             argument = varargin{i};
@@ -189,9 +191,10 @@ allowOffsets = 0;
         end
     end
 
-%% Preallocation
+    
+%% Preallocation of test file
 pace_param = pacemaker_param;
-if isa(filename, 'double')
+if isa(filename, 'double') %if it is a matrix
     sample_File = filename;
     name = inputname(1);
     if output == 0
@@ -199,7 +202,7 @@ if isa(filename, 'double')
     else
         fprintf(fileId,[name,'\n']);
     end
-elseif isa(filename,'char')
+elseif isa(filename,'char') %if it is a .txt file
     [path file ext] = fileparts(filename);
     name = file;
     if strcmp(ext,'.txt')
@@ -213,13 +216,14 @@ elseif isa(filename,'char')
     else
         error(['Unsupported file format ''',ext,'''']);
     end
-elseif isa(filename,'cell')
+elseif isa(filename,'cell') %if the input has multiple tests
     totalFiles = length(filename);
 else
     error(['Unsupported file format ''',inputname(1),'''']);
 end
-
+%% iterate over the tests (if there are more than one, otherwise do one tese
 for k = 1:totalFiles
+    %if multiple tests, read in a next test file.
     if totalFiles > 1
         if isa(filename{k},'double')
             sample_File = filename{k};
@@ -309,7 +313,7 @@ if plotSignals
     REF_MAGNITUDE = 2;
     SIGN_MAGNITUDE = 0.3;
     %Title font properties
-    TITLE_NAME = ['Pacemaker Operation Medtronic ',name];
+    TITLE_NAME = ['Pacemaker Operation ',name];
     TITLE_FONT = 'AvantGarde';
     TITLE_FONT_SIZE = 20;
     TITLE_FONT_WEIGHT = 'Bold';
@@ -335,9 +339,12 @@ end
     A_OFFSET_COLOR = [0 204/255 102/255];
     V_BOUND_COLOR = [153/255 204/255 1];
     V_OFFSET_COLOR = 'c';
+    ALPHA_FACE_VALUE = 0.2;
+    ALPHA_EDGE_VALUE = 0.5;
+   
     ERROR_COLOR = 'r';
-    ALPHA_FACE_VALUE = 0.1;
-    ALPHA_EDGE_VALUE = 0.25;
+    ERROR_ALPHA_FACE_VALUE = 0.5;
+    ERROR_ALPHA_EDGE_VALUE = 0.7;
     ifBoundsPrinted = 0;
     ifAOutput = 0;
     ifVOutput = 0;
@@ -435,7 +442,7 @@ if plotSignals || plotTimers
         end
     end
 end
-%% initialize
+%% initialize the pacemaker to known state
 if isa(initializer, 'double')
     initializer_File = initializer;
 elseif isa(initializer,'char')
@@ -502,72 +509,40 @@ while t < initializer_File(end,1)
     end
         if sendASignal == 1
             pace_param = pacemaker_new(pace_param,1,0, pace_inter);
-                if output == 0
-                    %cprintf(NOTE_COLOR, [SENT_A_SIG, num2str(t), '\n'])
-                    disp(strcat(SENT_A_SIG,num2str(t)));
-                else
-                    fprintf(fileId,[SENT_A_SIG,'%d\n'],t);
-                end
+            writeReport(output,SENT_A_SIG,NaN,2)
             if pace_param.a_sense
                 if seePaceSense
-                    if output == 0
-                        %cprintf(GOOD_COLOR, [DETECT_A_SIG, num2str(t), '\n'])
-                        disp(strcat(DETECT_A_SIG,num2str(t)));
-                    else
-                        fprintf(fileId,[DETECT_A_SIG,'%d\n'],t);
-                    end
+                    writeReport(output,DETECT_A_SIG,NaN,2)
                 end
             else
                 if seePaceSense
-                    if output == 0
-                        %cprintf(WARNING_COLOR, [NDETECT_A_SIG, num2str(t), '\n'])
-                        disp(strcat(NDETECT_A_SIG,num2str(t)));
-                        %warning([NDETECT_A_SIG, num2str(t)])
-                    else
-                        fprintf(fileId,[NDETECT_A_SIG,'%d\n'],t);
-                    end
+                    writeReport(output,NDETECT_A_SIG,NaN,2)
                 end
             end
         elseif sendVSignal == 1
             pace_param = pacemaker_new(pace_param,0,1, pace_inter);
-            if output == 0
-                %cprintf(NOTE_COLOR, [SENT_V_SIG, num2str(t), '\n'])
-                disp(strcat(SENT_V_SIG,num2str(t)));
-            else
-                fprintf(fileId,[SENT_V_SIG,'%d\n'],t);
-            end
-                if pace_param.v_sense
-                    if seePaceSense
-                        if output == 0
-                            %cprintf(GOOD_COLOR, [DETECT_V_SIG, num2str(t), '\n'])
-                            disp(strcat(DETECT_V_SIG,num2str(t)));
-                        else
-                            fprintf(fileId,[DETECT_V_SIG,'%d\n'],t);
-                        end
-                    end
-                else
-                    if seePaceSense
-                        if output == 0
-                            %cprintf(WARNING_COLOR, [NDETECT_V_SIG, num2str(t), '\n'])
-                            disp(strcat(NDETECT_V_SIG,num2str(t)));
-                            %warning([NDETECT_V_SIG, num2str(t)])
-                        else
-                            fprintf(fileId,[NDETECT_V_SIG,'%d\n'],t);
-                        end
-                    end
+            writeReport(output,SENT_V_SIG,NaN,2)
+            if pace_param.v_sense
+                if seePaceSense
+                    writeReport(output,DETECT_V_SIG,NaN,2)
                 end
+            else
+                if seePaceSense
+                    writeReport(output,NDETECT_V_SIG,NaN,2)
+                end
+            end
         else
             pace_param = pacemaker_new(pace_param,0,0, pace_inter);
         end
     pace_param;
     t= t+1;
 end
-read_next(); %see script/ or see function increment
-nextEvent
+read_next(); %read the first line in the file
 %wait until there is appropriate pacing
 aPaced = 0;
 vPaced = 0;
-%see if the test starts at an Atrial pace, Ventricle pace, or neither.
+%see if the test starts at an Atrial pace, Ventricle pace, or neither AND
+%happens at t=0.
 if nextTime == 0
     switch nextEvent
         case ATRIAL_OUTPUT
@@ -596,10 +571,13 @@ if nextTime == 0
                 end
                 pace_param = pacemaker_new(pace_param,0,0, pace_inter);
             end
-    otherwise
-        
+        otherwise
+        %TODO:deal with cases when the test is not initiated by pacing
+        %(i.e. should there be delay before the test, or immediately begin
+        %after initialization?
+    end
 end
-end
+
 %% Loop
 if output == 0
     disp(' ');
@@ -607,16 +585,14 @@ if output == 0
 else
     fprintf(fileId,'\nstarting test\n');
 end
-%read_next(); %see script/ or see function increment
 t=-1;
 
 while t< total_time
     
     t=t+1;
-    
+    sendASignal = 0;
+    sendVSignal = 0;
     %% Do Test
-        sendASignal = 0;
-        sendVSignal = 0;
         switch nextEvent
 % Atrial Input        
         case ATRIAL_INPUT
@@ -787,71 +763,79 @@ while t< total_time
             end
         end
         % a_sense
-        if pace_param.a_sense
-            data=SENSE_MAGNITUDE;
-            name = 'AS';
-            faceColor = 'b';
-            height = data + 0.3;
-            if plotTimers
-                subplot(2,1,1)
-            end
-            arrow([t,0],[t,data],'Length', roLength, 'TipAngle',roTipAngle,'EdgeColor','k','FaceColor',faceColor);
-            text(t,height,name,'FontName', TEXT_FONT,'FontWeight',TEXT_FONT_WEIGHT,'Fontsize', TEXT_FONT_SIZE); 
+        if seePaceSense
+            if pace_param.a_sense
+                data=SENSE_MAGNITUDE;
+                name = 'AS';
+                faceColor = 'b';
+                height = data + 0.3;
+                if plotTimers
+                    subplot(2,1,1)
+                end
+                arrow([t,0],[t,data],'Length', roLength, 'TipAngle',roTipAngle,'EdgeColor','k','FaceColor',faceColor);
+                text(t,height,name,'FontName', TEXT_FONT,'FontWeight',TEXT_FONT_WEIGHT,'Fontsize', TEXT_FONT_SIZE); 
             
-            if redFlag
-                makeErrorBlock('a');
-            end
+                if redFlag
+                    makeErrorBlock('a');
+                end
+            end 
         end
         % v_sense
-        if pace_param.v_sense
-            data=-SENSE_MAGNITUDE;
-            name = 'VS';
-            faceColor = 'c';
-            height = data - 0.3;
-            if plotTimers
-                subplot(2,1,1)
-            end
-            arrow([t,0],[t,data],'Length', roLength, 'TipAngle',roTipAngle,'EdgeColor','k','FaceColor',faceColor);
-            text(t,height,name,'FontName', TEXT_FONT,'FontWeight',TEXT_FONT_WEIGHT,'Fontsize', TEXT_FONT_SIZE); 
+        if seePaceSense
+            if pace_param.v_sense
+                data=-SENSE_MAGNITUDE;
+                name = 'VS';
+                faceColor = 'c';
+                height = data - 0.3;
+                if plotTimers
+                    subplot(2,1,1)
+                end
+                arrow([t,0],[t,data],'Length', roLength, 'TipAngle',roTipAngle,'EdgeColor','k','FaceColor',faceColor);
+                text(t,height,name,'FontName', TEXT_FONT,'FontWeight',TEXT_FONT_WEIGHT,'Fontsize', TEXT_FONT_SIZE); 
             
-            if redFlag
-                makeErrorBlock('v');
+                if redFlag
+                    makeErrorBlock('v');
+                end
             end
         end
         %a_ref
-        if pace_param.a_ref
-            data=REF_MAGNITUDE;
-            name = '[AR]';
-            faceColor = 'g';
-            height = data + 0.3;
-            if plotTimers
-                subplot(2,1,1)
-            end
-            arrow([t,0],[t,data],'Length', roLength, 'TipAngle',roTipAngle,'EdgeColor','k','FaceColor',faceColor);
-            text(t,height,name,'FontName', TEXT_FONT,'FontWeight',TEXT_FONT_WEIGHT,'Fontsize', TEXT_FONT_SIZE); 
+        if seePaceSense
+            if pace_param.a_ref
+                data=REF_MAGNITUDE;
+                name = '[AR]';
+                faceColor = 'g';
+                height = data + 0.3;
+                if plotTimers
+                    subplot(2,1,1)
+                end
+                arrow([t,0],[t,data],'Length', roLength, 'TipAngle',roTipAngle,'EdgeColor','k','FaceColor',faceColor);
+                text(t,height,name,'FontName', TEXT_FONT,'FontWeight',TEXT_FONT_WEIGHT,'Fontsize', TEXT_FONT_SIZE); 
             
-            if redFlag
-                makeErrorBlock('a');
+                if redFlag
+                    makeErrorBlock('a');
+                end
             end
         end
         % v_ref
-        if pace_param.v_ref
-            data = -REF_MAGNITUDE;
-            name ='[VR]';
-            faceColor = 'k';
-            height = data - 0.3;
-            if plotTimers
-                subplot(2,1,1)
-            end
-            arrow([t,0],[t,data],'Length', roLength, 'TipAngle',roTipAngle,'EdgeColor','k','FaceColor',faceColor);
-            text(t,height,name,'FontName', TEXT_FONT,'FontWeight',TEXT_FONT_WEIGHT,'Fontsize', TEXT_FONT_SIZE); 
+        if seePaceSense
+            if pace_param.v_ref
+                data = -REF_MAGNITUDE;
+                name ='[VR]';
+                faceColor = 'k';
+                height = data - 0.3;
+                if plotTimers
+                    subplot(2,1,1)
+                end
+                arrow([t,0],[t,data],'Length', roLength, 'TipAngle',roTipAngle,'EdgeColor','k','FaceColor',faceColor);
+                text(t,height,name,'FontName', TEXT_FONT,'FontWeight',TEXT_FONT_WEIGHT,'Fontsize', TEXT_FONT_SIZE); 
             
-            if redFlag
-                makeErrorBlock('v');
+                if redFlag
+                    makeErrorBlock('v');
+                end
             end
         end
    end
-   %% Plot Timer States
+   %% Plot Timer States NOTE: This has been made ineffective. 
    if plotTimers
               %AVI  
               if ~strcmp(pace_param.AVI,'off')
@@ -1063,67 +1047,38 @@ while t< total_time
         end
      %   pace_param.AF_interval
     end
-        if sendASignal == 1
+    %% Send signals/next Time Step
+        if sendASignal == 1 %if an atrial sense needs to be sent
             pace_param = pacemaker_new(pace_param,1,0, pace_inter);
-                if output == 0
-                    %cprintf(NOTE_COLOR, [SENT_A_SIG, num2str(t), '\n'])
-                    disp(strcat(SENT_A_SIG,num2str(t)));
-                else
-                    fprintf(fileId,[SENT_A_SIG,'%d\n'],t);
-                end
+            writeReport(output,SENT_A_SIG,NaN,2)
             if pace_param.a_sense
                 if seePaceSense
-                    if output == 0
-                        %cprintf(GOOD_COLOR, [DETECT_A_SIG, num2str(t), '\n'])
-                        disp(strcat(DETECT_A_SIG,num2str(t)));
-                    else
-                        fprintf(fileId,[DETECT_A_SIG,'%d\n'],t);
-                    end
+                    writeReport(output,DETECT_A_SIG,NaN,2)
                 end
             else
                 if seePaceSense
-                    if output == 0
-                        %cprintf(WARNING_COLOR, [NDETECT_A_SIG, num2str(t), '\n'])
-                        disp(strcat(NDETECT_A_SIG,num2str(t)));
-                        %warning([NDETECT_A_SIG, num2str(t)])
-                    else
-                        fprintf(fileId,[NDETECT_A_SIG,'%d\n'],t);
-                    end
+                    writeReport(output,NDETECT_A_SIG,NaN,2)
                 end
             end
-        elseif sendVSignal == 1
+            sendASignal = 0;
+        elseif sendVSignal == 1 %if a ventricular sense needs to be sent
             pace_param = pacemaker_new(pace_param,0,1, pace_inter);
-            if output == 0
-                %cprintf(NOTE_COLOR, [SENT_V_SIG, num2str(t), '\n'])
-                disp(strcat(SENT_V_SIG,num2str(t)));
-            else
-                fprintf(fileId,[SENT_V_SIG,'%d\n'],t);
-            end
-                if pace_param.v_sense
-                    if seePaceSense
-                        if output == 0
-                            %cprintf(GOOD_COLOR, [DETECT_V_SIG, num2str(t), '\n'])
-                            disp(strcat(DETECT_V_SIG,num2str(t)));
-                        else
-                            fprintf(fileId,[DETECT_V_SIG,'%d\n'],t);
-                        end
-                    end
-                else
-                    if seePaceSense
-                        if output == 0
-                            %cprintf(WARNING_COLOR, [NDETECT_V_SIG, num2str(t), '\n'])
-                            disp(strcat(NDETECT_V_SIG,num2str(t)));
-                            %warning([NDETECT_V_SIG, num2str(t)])
-                        else
-                            fprintf(fileId,[NDETECT_V_SIG,'%d\n'],t);
-                        end
-                    end
+            writeReport(output,SENT_V_SIG,NaN,2)
+            if pace_param.v_sense
+                if seePaceSense
+                    writeReport(output,DETECT_V_SIG,NaN,2)
                 end
-        else
+            else
+                if seePaceSense
+                    writeReport(output,NDETECT_V_SIG,NaN,2)
+                end
+            end
+            sendVSignal = 0;
+        else %otherwise, go to next time step.
             pace_param = pacemaker_new(pace_param,0,0, pace_inter);
         end
 
-        
+%% Break/Escape test conditions        
         %break out of while loop once finished testing  
     if breakEarly        
         if t > (nextTime + offset)+ greatestTolerance + 300 && nextLine > length(sample_File)
@@ -1141,7 +1096,7 @@ while t< total_time
     end        
 %if error was found, exit the test
     if fileError
-        theEnd = nextTime +offset + greatestTolerance + 300;
+        theEnd = max(nextTime +offset + greatestTolerance + 300,t +offset + greatestTolerance + 300);
         if plotSignals && plotTimers
             subplot(2,1,1)
             set(gca,'Ylim',[-4,4],'Xlim',[0,theEnd]);
@@ -1153,10 +1108,7 @@ while t< total_time
         break;
     end
         
-end
-if plotSignals || plotTimers
-    set(gcf, 'PaperPositionMode', 'auto');
-end
+end %end test
 
     testError = testError + fileError;
     if fileError
@@ -1169,34 +1121,35 @@ else
     fprintf(fileId,'\n');
 end
 end
-%{
-if output == 0
-    disp('Complete.');
-    disp('Results:');
-    disp(['Total tests: ', num2str(totalFiles)]);
-    disp(['Total tests failed: ',num2str(testError),'   percentage: ',num2str((totalFiles-testError)/totalFiles*100),'%']);
-    disp(['Tests with errors: ',num2str(testsInError)]);
-    disp(['Total early ventricular pacing: ',num2str(total_V_early_errors),'   average per test: ',num2str(total_V_early_errors/totalFiles)]);
-    disp(['Total early atrial pacing: ',num2str(total_A_early_errors),'   average per test: ', num2str(total_A_early_errors/totalFiles)]);
-    disp(['Total late ventricular pacing: ',num2str(total_V_late_errors),'   average per test: ', num2str(total_V_late_errors/totalFiles)]);
-    disp(['Total late atrial pacing: ',num2str(total_A_late_errors),'   average per test: ', num2str(total_A_late_errors/totalFiles)]);
-    disp(['Total ventricular pacing in error: ',num2str(total_V_wrong_errors),'   average per test: ',num2str(total_V_wrong_errors/totalFiles)]);
-    disp(['Total atrial pacing in error: ',num2str(total_A_wrong_errors),'   average per test: ',num2str(total_A_wrong_errors/totalFiles)]);
-    disp(' ');
-else
-    fprintf(fileId,'Results:\n');
-    fprintf(fileId,'Total tests: %d\n', totalFiles);
-    fprintf(fileId,'Total tests failed: %d\tpercentage: %d%%\n',testError,(totalFiles-testError)/totalFiles*100);
-    fprintf(fileId,'Tests with errors: %s\n',testsInError);
-    fprintf(fileId,'Total early ventricular pacing: %d \t average per test: %d\n',total_V_early_errors,total_V_early_errors/totalFiles);
-    fprintf(fileId,'Total early atrial pacing: %d \t average per test: %d\n', total_A_early_errors, total_A_early_errors/totalFiles);
-    fprintf(fileId,'Total late ventricular pacing: %d \t average per test: %d\n', total_V_late_errors, total_V_late_errors/totalFiles);
-    fprintf(fileId,'Total late atrial pacing: %d \t average per test: %d\n', total_A_late_errors, total_A_late_errors/totalFiles);
-    fprintf(fileId,'Total ventricular pacing in error: %d \t average per test: %d\n', total_V_wrong_errors, total_V_wrong_errors/totalFiles);
-    fprintf(fileId,'Total atrial pacing in error: %d \t average per test: %d\n', total_A_wrong_errors, total_A_wrong_errors/totalFiles);
-    fclose(fileId);
+%print out a summary of the tests if more than 1 test was done.
+if totalFiles > 1
+    if output == 0
+        disp('Complete.');
+        disp('Results:');
+        disp(['Total tests: ', num2str(totalFiles)]);
+        disp(['Total tests failed: ',num2str(testError),'   percentage: ',num2str((totalFiles-testError)/totalFiles*100),'%']);
+        disp(['Tests with errors: ',num2str(testsInError)]);
+        disp(['Total early ventricular pacing: ',num2str(total_V_early_errors),'   average per test: ',num2str(total_V_early_errors/totalFiles)]);
+        disp(['Total early atrial pacing: ',num2str(total_A_early_errors),'   average per test: ', num2str(total_A_early_errors/totalFiles)]);
+        disp(['Total late ventricular pacing: ',num2str(total_V_late_errors),'   average per test: ', num2str(total_V_late_errors/totalFiles)]);
+        disp(['Total late atrial pacing: ',num2str(total_A_late_errors),'   average per test: ', num2str(total_A_late_errors/totalFiles)]);
+        disp(['Total ventricular pacing in error: ',num2str(total_V_wrong_errors),'   average per test: ',num2str(total_V_wrong_errors/totalFiles)]);
+        disp(['Total atrial pacing in error: ',num2str(total_A_wrong_errors),'   average per test: ',num2str(total_A_wrong_errors/totalFiles)]);
+        disp(' ');
+    else
+        fprintf(fileId,'Results:\n');
+        fprintf(fileId,'Total tests: %d\n', totalFiles);
+        fprintf(fileId,'Total tests failed: %d\tpercentage: %d%%\n',testError,(totalFiles-testError)/totalFiles*100);
+        fprintf(fileId,'Tests with errors: %s\n',testsInError);
+        fprintf(fileId,'Total early ventricular pacing: %d \t average per test: %d\n',total_V_early_errors,total_V_early_errors/totalFiles);
+        fprintf(fileId,'Total early atrial pacing: %d \t average per test: %d\n', total_A_early_errors, total_A_early_errors/totalFiles);
+        fprintf(fileId,'Total late ventricular pacing: %d \t average per test: %d\n', total_V_late_errors, total_V_late_errors/totalFiles);
+        fprintf(fileId,'Total late atrial pacing: %d \t average per test: %d\n', total_A_late_errors, total_A_late_errors/totalFiles);
+        fprintf(fileId,'Total ventricular pacing in error: %d \t average per test: %d\n', total_V_wrong_errors, total_V_wrong_errors/totalFiles);
+        fprintf(fileId,'Total atrial pacing in error: %d \t average per test: %d\n', total_A_wrong_errors, total_A_wrong_errors/totalFiles);
+        fclose(fileId);
+    end
 end
-%}
 %% functions
 
     function redFlag = ventricularOutput()
@@ -1287,12 +1240,6 @@ end
     function redFlag = atrialOutput()
            ifAOutput = 0;
            redFlag = 0;
- %           if nextLine == 1 %if first line in test
- %               correctTime = nextTime;
- %               writeReport(output,A_ON,correctTime,1)
- %               pace_param.a_pace = 1;
- %               ifAOutput = 1;
- %           else
                 if allowOffsets
                     a_lowBound = (nextTime+offset)-tolerance_atrial;
                     a_highBound = (nextTime+offset)+tolerance_atrial;
@@ -1422,18 +1369,20 @@ end
         end
     end
     function initializer_next()
+        %initializer_next reads the next line in the initializer file.
     [lin, time, event,...
         nxtTime,nxtEvent, initializer_File] = increment(lin, time, event,...
         nxtTime,nxtEvent, initializer_File);
     end
     function read_next()
+        %read_next reads the next line in the test file.
     [nextLine, nextTime, nextEvent,...
         nextNextTime,nextNextEvent, sample_File] = increment(nextLine, nextTime, nextEvent,...
         nextNextTime,nextNextEvent, sample_File);       
     end
 
     function [nxtLine, nxtTime, nxtEvent, nNTime,nNEvent, smp_File] = increment(nxtLine, nxtTime, nxtEvent, nNTime,nNEvent, smp_File)
-    %increment Summary of this function goes here
+    %increment reads the next line, and next next line of an nx2 matrix
     %   Detailed explanation goes here
         nxtLine = nxtLine + 1;
         if nxtLine <= length(smp_File)
@@ -1453,22 +1402,32 @@ end
 
     end
     function writeReport(output,sentence,correctTime,good)
-        if good
+        %writeReport writes a line on if the pacemaker did something in
+        %error or did it correctly.
+        if good == 1 %good statement
             if output == 0
                 disp([sentence, num2str(t), '. (Expected at t=', num2str(correctTime),'. Misalignment: ',num2str(t-correctTime),')']);
             else
                 fprintf(fileId,[sentence,'%d. (Expected at t=%d. Misalignment: %d)\n'],t,correctTime, t-correctTime);
             end
-        else
+        elseif good == 0 %error statemtn
             if output == 0
                 fprintf(2, [sentence, num2str(t),'. (Expected at t=',num2str(correctTime), '. Misalignment: ',num2str(t-correctTime),')\n'])
             else
                 fprintf(fileId,[sentence,'%d. (Expected at t=%d. Misalignment: %d)\n'],t,correctTime, t-correctTime);
             end
+        elseif good == 2 %neutral statement
+            if output == 0
+                disp([sentence, num2str(t), '.']);
+            else
+                fprintf(fileId,[sentence,'%d.\n'],t);
+            end
         end
     end
 
     function correctTime = getCorrectTime(allowOffsets,offset,time)
+        %correctTime gets the expected time of a pacemaker event if an
+        %error occurred.
          if allowOffsets
              correctTime = time + offset;
          else
@@ -1478,12 +1437,14 @@ end
     end
 
     function makeErrorBlock(type)
+        %if plotting, makeErrorBlock creates a rectangle surrounding the
+        %incorrect pacemaker event.
         high = t+5;
         low  = t-5;
         if strcmp(type,'v')      
-            patch([low,high,high,low],[-4 -4 0 0],ERROR_COLOR,'EdgeColor', ERROR_COLOR,'EdgeAlpha',ALPHA_EDGE_VALUE,'FaceAlpha',ALPHA_FACE_VALUE);
+            patch([low,high,high,low],[-4 -4 0 0],ERROR_COLOR,'EdgeColor', ERROR_COLOR,'EdgeAlpha',ERROR_ALPHA_EDGE_VALUE,'FaceAlpha',ERROR_ALPHA_FACE_VALUE);
         elseif strcmp(type,'a')
-            patch([low,high,high,low],[0 0 4 4],ERROR_COLOR,'EdgeColor', ERROR_COLOR,'EdgeAlpha',ALPHA_EDGE_VALUE,'FaceAlpha',ALPHA_FACE_VALUE);
+            patch([low,high,high,low],[0 0 4 4],ERROR_COLOR,'EdgeColor', ERROR_COLOR,'EdgeAlpha',ERROR_ALPHA_EDGE_VALUE,'FaceAlpha',ERROR_ALPHA_FACE_VALUE);
         end
    end
 end

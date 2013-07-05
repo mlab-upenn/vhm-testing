@@ -129,7 +129,7 @@ end
     %after an atrial event is considered to be main ventricular event,
     %events afterwards are considered PVC. it counts how many ventricular
     %events occur before an atrial event. anything >=1 is considered a PVC.
-    if pace_param.v_sense || pace_param.v_pace || pace_param.v_ref
+    if pace_param.v_sense || pace_param.v_pace
         pace_param.P_det = pace_param.P_det + 1; 
     end
     %%%end edit%%%
@@ -223,9 +223,8 @@ end
 if pace_param.VT>=pace_param.TLRI
     v_p=1;
 end
-%%TODO: fix this issue.
-                                                                                %%%%this statement causes issues   %%this statement helps to ensure it paces only once during AEI
-if pace_param.VSP==0 && pace_param.AT>=pace_param.TAVI && pace_param.A_det==1 && pace_param.VT>=pace_param.TURI && pace_param.P_det == 0
+%%TODO: fix this issue.                                   %%this statement causes issues
+if pace_param.VSP==0 && pace_param.AT>=pace_param.TAVI && pace_param.VT>=pace_param.TURI && pace_param.A_det==1
     v_p=1;
 end
 %% update the local variables to global variables

@@ -1,0 +1,24 @@
+test_File_34
+initializing: 
+sent atrial signal at t=200.
+WARNING: pacemaker did not detect atrial signal at t=200.
+sent ventrical signal at t=400.
+pacemaker detected ventrical signal at t=400.
+ERROR: Pacemaker incorrectly paced atrium. at t=1000. (Expected at t=NaN. Misalignment: NaN)
+sent atrial signal at t=1000.
+WARNING: pacemaker did not detect atrial signal at t=1000.
+sent ventrical signal at t=1200.
+pacemaker detected ventrical signal at t=1200.
+sent atrial signal at t=1800.
+pacemaker detected atrial signal at t=1800.
+
+starting test
+Pacemaker paced ventricle On Time at t=0. (Expected at t=0. Misalignment: 0)
+sent atrial signal at t=200.
+WARNING: pacemaker did not detect atrial signal at t=200.
+sent ventrical signal at t=240.
+WARNING: pacemaker did not detect ventrical signal at t=240.
+Pacemaker paced atrium On Time at t=750. (Expected at t=750. Misalignment: 0)
+Pacemaker paced ventricle On Time at t=1001. (Expected at t=1000. Misalignment: 1)
+Pacemaker paced atrium On Time at t=1751. (Expected at t=1751. Misalignment: 0)
+
