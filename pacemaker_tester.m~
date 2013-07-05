@@ -563,43 +563,25 @@ while t < initializer_File(end,1)
     t= t+1;
 end
 read_next(); %see script/ or see function increment
-nextEvent
 %wait until there is appropriate pacing
 aPaced = 0;
 vPaced = 0;
-%see if the test starts at an Atrial pace, Ventricle pace, or neither.
-if nextTime == 0
-    switch nextEvent
-        case ATRIAL_OUTPUT
-            while 1
-                if pace_param.v_pace
-                    vPaced = 1;
-                end
-                if vPaced && pace_param.a_pace
-                    aPaced = 1;
-                end
-                if aPaced && vPaced
-                    break;
-                end
-                pace_param = pacemaker_new(pace_param,0,0, pace_inter);
-            end
-        case VENTRICAL_OUTPUT
-            while 1
-                if pace_param.a_pace
-                    aPaced = 1;
-                end
-                if aPaced && pace_param.v_pace
-                    vPaced = 1;
-                end
-                if aPaced && vPaced
-                    break;
-                end
-                pace_param = pacemaker_new(pace_param,0,0, pace_inter);
-            end
-    otherwise
-        
+%see if teh
+switch nextEvent
+    case
+while 1
+    if pace_param.a_pace
+        aPaced = 1;
+    end
+    if aPaced && pace_param.v_pace
+        vPaced = 1;
+    end
+    if aPaced && vPaced
+        break;
+    end
+    pace_param = pacemaker_new(pace_param,0,0, pace_inter);
 end
-end
+
 %% Loop
 if output == 0
     disp(' ');
@@ -607,7 +589,7 @@ if output == 0
 else
     fprintf(fileId,'\nstarting test\n');
 end
-%read_next(); %see script/ or see function increment
+read_next(); %see script/ or see function increment
 t=-1;
 
 while t< total_time
