@@ -1,0 +1,18 @@
+test_File_56
+initializing: 
+sent atrial signal at t=200
+sent ventrical signal at t=400
+sent atrial signal at t=1000
+ERROR: Pacemaker incorrectly paced ventricle at t=1152. (Expected at t=NaN. Misalignment: NaN)
+sent ventrical signal at t=1200
+sent atrial signal at t=1800
+ERROR: Pacemaker incorrectly paced ventricle at t=1952. (Expected at t=NaN. Misalignment: NaN)
+
+starting test
+Pacemaker paced ventricle On Time at t=0. (Expected at t=0. Misalignment: 0)
+sent ventrical signal at t=250
+sent ventrical signal at t=500
+sent ventrical signal at t=750
+sent ventrical signal at t=800
+ERROR: Pacemaker paced atrium late at t=1602. (Expected at t=850. Misalignment: 752)
+

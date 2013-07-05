@@ -308,7 +308,7 @@ if plotSignals
     REF_MAGNITUDE = 2;
     SIGN_MAGNITUDE = 0.3;
     %Title font properties
-    TITLE_NAME = ['Pacemaker Operation Medtronic Test ',name];
+    TITLE_NAME = ['Pacemaker Operation Medtronic ',name];
     TITLE_FONT = 'AvantGarde';
     TITLE_FONT_SIZE = 20;
     TITLE_FONT_WEIGHT = 'Bold';
@@ -404,7 +404,7 @@ if plotSignals || plotTimers
             subplot(2,1,1)
         end
         %Signal Plot
-        title(TITLE_NAME,'FontName',TITLE_FONT,'FontWeight',TITLE_FONT_WEIGHT, 'FontSize', TITLE_FONT_SIZE);
+        title(TITLE_NAME,'FontName',TITLE_FONT,'FontWeight',TITLE_FONT_WEIGHT, 'FontSize', TITLE_FONT_SIZE,'Interpreter','None');
         ylabel(SIGNAL_NAME,'FontName',SIGNAL_FONT,'FontWeight',SIGNAL_FONT_WEIGHT,'FontSize', SIGNAL_FONT_SIZE);
         xlabel(XAXIS_NAME,'FontWeight',XAXIS_FONT_WEIGHT,'FontSize', XAXIS_FONT_SIZE);
         set(gca,'Ylim',[-4,4],'Xlim',[0,total_time],'FontWeight','Bold','FontSize', 16);
@@ -457,8 +457,10 @@ nxtEvent = 0;
 initializer_next();
 if output == 0
     disp('initializing');
+else
+    fprintf(fileId,'initializing: \n');
 end
-while t < initializer_File(end,1) + 100
+while t < initializer_File(end,1)
     sendASignal = 0;
     sendVSignal = 0;
     switch event
@@ -579,6 +581,8 @@ end
 if output == 0
     disp(' ');
     disp('starting test')
+else
+    fprintf(fileId,'\nstarting test\n');
 end
 read_next(); %see script/ or see function increment
 t=-1;
@@ -1142,12 +1146,12 @@ else
     fprintf(fileId,'\n');
 end
 end
-
+%{
 if output == 0
     disp('Complete.');
     disp('Results:');
     disp(['Total tests: ', num2str(totalFiles)]);
-    disp(['Total tests failed: ',num2str(testError),'   percentage: ',num2str(testError/totalFiles*100),'%']);
+    disp(['Total tests failed: ',num2str(testError),'   percentage: ',num2str((totalFiles-testError)/totalFiles*100),'%']);
     disp(['Tests with errors: ',num2str(testsInError)]);
     disp(['Total early ventricular pacing: ',num2str(total_V_early_errors),'   average per test: ',num2str(total_V_early_errors/totalFiles)]);
     disp(['Total early atrial pacing: ',num2str(total_A_early_errors),'   average per test: ', num2str(total_A_early_errors/totalFiles)]);
@@ -1159,7 +1163,7 @@ if output == 0
 else
     fprintf(fileId,'Results:\n');
     fprintf(fileId,'Total tests: %d\n', totalFiles);
-    fprintf(fileId,'Total tests failed: %d\tpercentage: %d%%\n',testError,testError/totalFiles*100);
+    fprintf(fileId,'Total tests failed: %d\tpercentage: %d%%\n',testError,(totalFiles-testError)/totalFiles*100);
     fprintf(fileId,'Tests with errors: %s\n',testsInError);
     fprintf(fileId,'Total early ventricular pacing: %d \t average per test: %d\n',total_V_early_errors,total_V_early_errors/totalFiles);
     fprintf(fileId,'Total early atrial pacing: %d \t average per test: %d\n', total_A_early_errors, total_A_early_errors/totalFiles);
@@ -1168,8 +1172,8 @@ else
     fprintf(fileId,'Total ventricular pacing in error: %d \t average per test: %d\n', total_V_wrong_errors, total_V_wrong_errors/totalFiles);
     fprintf(fileId,'Total atrial pacing in error: %d \t average per test: %d\n', total_A_wrong_errors, total_A_wrong_errors/totalFiles);
     fclose(fileId);
-
 end
+%}
 %% functions
 
     function redFlag = ventricularOutput()

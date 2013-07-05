@@ -1,0 +1,14 @@
+test_File_75
+initializing: 
+sent atrial signal at t=200
+sent ventrical signal at t=400
+sent atrial signal at t=1000
+sent ventrical signal at t=1200
+sent atrial signal at t=1800
+
+starting test
+Pacemaker paced ventricle On Time at t=0. (Expected at t=0. Misalignment: 0)
+sent ventrical signal at t=300
+sent atrial signal at t=900
+ERROR: Pacemaker paced ventricle late at t=1152. (Expected at t=1100. Misalignment: 52)
+

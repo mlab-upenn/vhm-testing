@@ -1,10 +1,10 @@
 close all;
 clear;
 clc;
-load Medtronic_tests/medtronic_test_1-75.mat
-load edge_cov.mat
-load PM_new.mat
-load initializer.mat
+load vhm-testing/Medtronic_tests/medtronic_test_1-75.mat
+load vhm-testing/edge_cov.mat
+load vhm-testing/PM_new.mat
+load vhm-testing/initializer.mat
 %{
 index =45:75; %[9,15,20,22,23,25,27,31,33,34,37,38,40,41,43];% [1:29, 31:34, 36:39, 40:43];%, 45:75]; 
 files = cell(length(index),1);

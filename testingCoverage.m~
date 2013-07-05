@@ -63,7 +63,7 @@ for i = 1:length(index)
     pacemaker_tester(file,initializer,pace_test,'tolerances',[5,5],'allowOffset', 1)
 end
 %}
-pace_test = pace_param;
+%{
 pacemaker_tester(test_File_9,initializer,pace_test,'plot','signals','tolerances',[5,5],'allowOffset', 1,'output','test_File_9_results.txt')
 pacemaker_tester(test_File_15,initializer,pace_test,'plot','signals','tolerances',[5,5],'allowOffset', 1,'output','test_File_15_results.txt')
 pacemaker_tester(test_File_20,initializer,pace_test,'plot','signals','tolerances',[5,5],'allowOffset', 1,'output','test_File_20_results.txt')
@@ -79,7 +79,7 @@ pacemaker_tester(test_File_38,initializer,pace_test,'plot','signals','tolerances
 
 pace_test.TURI = 750;
 pacemaker_tester(test_File_40,initializer,pace_test,'plot','signals','tolerances',[5,5],'allowOffset', 1,'output','test_File_40_results.txt')
-
+%}
 pace_test = pace_param;
 pacemaker_tester(test_File_41,initializer,pace_test,'plot','signals','tolerances',[5,5],'allowOffset', 1,'output','test_File_41_results.txt')
 pacemaker_tester(test_File_43,initializer,pace_test,'plot','signals','tolerances',[5,5],'allowOffset', 1,'output','test_File_43_results.txt')
@@ -127,13 +127,13 @@ pace_test = pace_param;
 pace_test.TAVI = 200;
 pace_test.PAARP = 200;
 pacemaker_tester(test_File_61,initializer,pace_test,'plot','signals','tolerances',[5,5],'allowOffset', 1,'output','test_File_61_results.txt')
-%{
+
 pace_test = pace_param;
 pace_test.TAVI = 150;
 pace_test.PAARP = 150;
 pace_test.TURI = 666;
 pacemaker_tester(test_File_63,initializer,pace_test,'plot','signals','tolerances',[5,5],'allowOffset', 1,'output','test_File_63_results.txt')
-%}
+
 pace_test = pace_param;
 pace_test.TAVI = 200;
 pace_test.PAARP = 200;
@@ -153,13 +153,7 @@ pace_test.TAVI = 120;
 pace_test.PAARP = 120;
 pace_test.TURI = 545;
 pacemaker_tester(test_File_69,initializer,pace_test,'plot','signals','tolerances',[5,5],'allowOffset', 1,'output','test_File_69_results.txt')
-%{
-pace_test = pace_param;
-pace_test.TAVI = 120;
-pace_test.PAARP = 120;
-pace_test.TURI = 666;
-pacemaker_tester(test_File_72,initializer,pace_test,'plot','signals','tolerances',[5,5],'allowOffset', 1,'output','test_File_72_results.txt')
-%}
+
 pace_test = pace_param;
 pace_test.TAVI = 200;
 pace_test.PAARP = 200;
@@ -178,6 +172,97 @@ pacemaker_tester(test_File_75,initializer,pace_test,'plot','signals','tolerances
 %{
 pace_param.TURI = 750;
 pacemaker_tester(test_File_40,initializer,pace_param,'plot','signals','tolerances',[5,5],'allowOffset', 1,'output','test_File_40_results.txt')
+%}
+%{
+switch number
+    case {40}
+        pace_param.TURI = 750;
+    case {50, 56}
+        pace_param.pAVI_cur = 150;
+        pace_param.pAVI_def = 150;
+        pace_param.sAVI_cur = 150;
+        pace_param.sAVI_def = 150;
+        pace_param.LRI_cur = pace_param.LRI_def - pace_param.sAVI_def;
+    case {53}
+        pace_param.pAVI_def = 300;
+        pace_param.pAVI_cur = 300;
+        pace_param.sAVI_def = 300;
+        pace_param.sAVI_cur = 300;
+        pace_param.URI_cur = 666;
+        pace_param.URI_def = 666;
+        pace_param.LRI_def = 1000;
+        pace_param.LRI_cur = pace_param.LRI_def - pace_param.sAVI_def;
+        
+    case {54, 55}
+        pace_param.URI_cur = 500;
+        pace_param.URI_def = 500;
+        pace_param.sAVI_cur = 80;
+        pace_param.sAVI_def = 80;
+        pace_param.pAVI_cur = 80;
+        pace_param.pAVI_def = 80;
+        pace_param.VSP_sense = 80;
+        pace_param.LRI_def = 600;
+        pace_param.LRI_cur = pace_param.LRI_def - pace_param.sAVI_def;
+    case {57, 58, 59, 61, 62, 64, 65, 66, 67, 70}
+        pace_param.pAVI_def = 200;
+        pace_param.pAVI_cur = 200;
+        pace_param.sAVI_def = 200;
+        pace_param.sAVI_cur = 200;
+        pace_param.LRI_cur = pace_param.LRI_def - pace_param.sAVI_def;
+    case {60, 63}
+        pace_param.pAVI_cur = 150;
+        pace_param.pAVI_def = 150;
+        pace_param.sAVI_cur = 150;
+        pace_param.sAVI_def = 150;
+        pace_param.URI_cur = 666;
+        pace_param.URI_def = 666;
+        pace_param.LRI_cur = pace_param.LRI_def - pace_param.sAVI_def;
+    case {68, 72}
+        pace_param.pAVI_cur = 120;
+        pace_param.pAVI_def = 120;
+        pace_param.sAVI_cur = 120;
+        pace_param.sAVI_def = 120;
+        pace_param.URI_cur = 666;
+        pace_param.URI_def = 666;
+        pace_param.LRI_cur = pace_param.LRI_def - pace_param.sAVI_def;
+    case {69}
+        pace_param.pAVI_cur = 120;
+        pace_param.pAVI_def = 120;
+        pace_param.sAVI_cur = 120;
+        pace_param.sAVI_def = 120;
+        pace_param.URI_cur = 545;
+        pace_param.URI_def = 545;
+        pace_param.LRI_cur = pace_param.LRI_def - pace_param.sAVI_def;
+    case {71}
+        pace_param.pAVI_cur = 200;
+        pace_param.pAVI_def = 200;
+        pace_param.sAVI_cur = 200;
+        pace_param.sAVI_def = 200;
+        pace_param.URI_cur = 500;
+        pace_param.URI_def = 500;
+        pace_param.LRI_cur = pace_param.LRI_def - pace_param.sAVI_def; 
+    case {73}
+        pace_param.pAVI_cur = 200;
+        pace_param.pAVI_def = 200;
+        pace_param.sAVI_cur = 200;
+        pace_param.sAVI_def = 200;
+        pace_param.URI_cur = 750;
+        pace_param.URI_def = 750;
+        pace_param.LRI_cur = pace_param.LRI_def - pace_param.sAVI_def; 
+    case {74, 75}
+        pace_param.pAVI_cur = 200;
+        pace_param.pAVI_def = 200;
+        pace_param.sAVI_cur = 200;
+        pace_param.sAVI_def = 200;
+        pace_param.PVARP_def = 500;
+        pace_param.PVARP_cur = 500;
+        pace_param.VRP_def = 500;
+        pace_param.VRP_cur = 500;
+        pace_param.URI_cur = 750;
+        pace_param.URI_def = 750;
+        pace_param.LRI_cur = pace_param.LRI_def - pace_param.sAVI_def; 
+        
+end
 %}
 %Tests that have issues:
 %9,15,20,22,23,25,27,31,33,34,37,38,40,
