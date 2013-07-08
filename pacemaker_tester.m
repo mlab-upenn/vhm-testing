@@ -37,10 +37,13 @@ function [] = pacemaker_tester(filename,initializer,pacemaker_param,varargin)
 %   'output' defines where the report should be output to. Parameter is
 %       either 'display' if the results are printed on the matlab command
 %       prompt, or a filename (i.e. 'report.txt') where the report will be
-%       printed to.
+%       printed to.Default is to the Matlab command prompt.
 %   'seePaceSense' defines if the report should also include if the model
 %       detected A/V stimuli. 0 to disallow or 1 to allow. In terms of black
 %       box testing, this should not be used. Default is not on.
+%   'displayInitializer' allows the reporting of the pacemaker operation
+%       when it's being initialized. use 1 to allow and 0 to disallow. Default
+%       is 0.
 %
 %{
 close all;
@@ -60,6 +63,7 @@ tolerance_ventrical = 0; %Acceptable tolerance for detecting ventricular output 
 greatestTolerance = max([tolerance_atrial, tolerance_ventrical]);
 output = 0; %0 if output to display, 1 if printing to file.
 seePaceSense = 0;
+displayInitializer = 0;
 totalFiles = 1;
 
 %%TODO: Figure out which parameters to record in the error report.
@@ -184,6 +188,11 @@ allowOffsets = 0;
                 parameter = varargin{i+1};
                 if parameter == 1
                     seePaceSense = 1;
+                end
+            elseif strcmpi(argument,'displayInitializer')
+                parameter = varargin{i+1};
+                if parameter == 1
+                    displayInitializer = 1;
                 end
             else
                 error(['Unknown argument ''',varargin{i},'''']);
@@ -369,13 +378,13 @@ end
     DETECT_V_SIG = 'pacemaker detected ventrical signal at t=';
     NDETECT_V_SIG = 'WARNING: pacemaker did not detect ventrical signal at t=';
     
-    A_EARLY = 'ERROR: Pacemaker paced atrium, early at t=';
-    A_ON = 'Pacemaker paced atrium On Time at t=';
+    A_EARLY = 'ERROR: Pacemaker paced atrium early at t=';
+    A_ON = 'Pacemaker paced atrium on time at t=';
     A_LATE = 'ERROR: Pacemaker paced atrium late at t=';
     A_WRONG = 'ERROR: Pacemaker incorrectly paced atrium. at t=';
     
     V_EARLY = 'ERROR: Pacemaker paced ventricle early at t=';
-    V_ON = 'Pacemaker paced ventricle On Time at t=';
+    V_ON = 'Pacemaker paced ventricle on time at t=';
     V_LATE = 'ERROR: Pacemaker paced ventricle late at t=';
     V_WRONG = 'ERROR: Pacemaker incorrectly paced ventricle at t=';
     
@@ -464,7 +473,7 @@ nxtTime = 0;
 nxtEvent = 0;
 initializer_next();
 if output == 0
-    disp('initializing');
+    disp('initializing...');
 else
     fprintf(fileId,'initializing: \n');
 end
@@ -476,11 +485,15 @@ while t < initializer_File(end,1)
             %check instances where there is incorrect pacing
             if pace_param.v_pace == 1
                 correctTime = NaN;
-                writeReport(output,V_WRONG,correctTime,0)
+                if displayInitializer
+                    writeReport(output,V_WRONG,correctTime,0)
+                end
             end
             if pace_param.a_pace == 1
                 correctTime = NaN;
-                writeReport(output,A_WRONG,correctTime,0)
+                if displayInitializer
+                    writeReport(output,A_WRONG,correctTime,0)
+                end
             end
             %deliver the sense when the time is right
             if t == (time + offset)
@@ -493,11 +506,15 @@ while t < initializer_File(end,1)
             %check instances where there is incorrect pacing
             if pace_param.v_pace == 1
                 correctTime = NaN;
-                writeReport(output,V_WRONG,correctTime,0)
+                if displayInitializer
+                    writeReport(output,V_WRONG,correctTime,0)
+                end
             end
             if pace_param.a_pace == 1
                 correctTime = NaN;
-                writeReport(output,A_WRONG,correctTime,0)
+                if displayInitializer
+                    writeReport(output,A_WRONG,correctTime,0)
+                end
             end
             %deliver the sense when the time is right
             if t == (time + offset)
@@ -509,26 +526,38 @@ while t < initializer_File(end,1)
     end
         if sendASignal == 1
             pace_param = pacemaker_new(pace_param,1,0, pace_inter);
-            writeReport(output,SENT_A_SIG,NaN,2)
+            if displayInitializer
+                writeReport(output,SENT_A_SIG,NaN,2)
+            end
             if pace_param.a_sense
                 if seePaceSense
-                    writeReport(output,DETECT_A_SIG,NaN,2)
+                    if displayInitializer
+                        writeReport(output,DETECT_A_SIG,NaN,2)
+                    end
                 end
             else
                 if seePaceSense
-                    writeReport(output,NDETECT_A_SIG,NaN,2)
+                    if displayInitializer
+                        writeReport(output,NDETECT_A_SIG,NaN,2)
+                    end
                 end
             end
         elseif sendVSignal == 1
             pace_param = pacemaker_new(pace_param,0,1, pace_inter);
-            writeReport(output,SENT_V_SIG,NaN,2)
+            if displayInitializer
+                writeReport(output,SENT_V_SIG,NaN,2)
+            end
             if pace_param.v_sense
                 if seePaceSense
-                    writeReport(output,DETECT_V_SIG,NaN,2)
+                    if displayInitializer
+                        writeReport(output,DETECT_V_SIG,NaN,2)
+                    end
                 end
             else
                 if seePaceSense
-                    writeReport(output,NDETECT_V_SIG,NaN,2)
+                    if displayInitializer
+                        writeReport(output,NDETECT_V_SIG,NaN,2)
+                    end
                 end
             end
         else
