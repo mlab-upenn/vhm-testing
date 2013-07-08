@@ -1,6 +1,8 @@
 function [theStruct] = readUPPAAL(filename)
-%UNTITLED2 Summary of this function goes here
-%   Detailed explanation goes here
+%readUPPAAL reads in a UPPAAL-formatted .xml file and outputs a structure
+%   containing data from the .xml file.
+%   filename is the name of the file i.e. 'uppaalfile.xml'
+%   theStruct has the contents of the file in a structure-format.
 try
    doc = xmlread(filename);
 catch err
@@ -250,11 +252,10 @@ end
                                 v = v+1;
                             end
                         elseif length(strfind(line{m},'=')) >= 1
-                            line = line(1:strfind(line,';')-1);
-                            line = line(~isspace(line));
-                            line = strsplit(line,'=');
-                            processName = line{1};
-                            theRest = line{2};
+                            line{m} = line{m}(~isspace(line{m}));
+                            newline = strsplit(line{m},'=');
+                            processName = newline{1};
+                            theRest = newline{2};
                             theRest = strsplit(theRest,'(');
                             funct = theRest{1};
                             theRest = theRest{2};

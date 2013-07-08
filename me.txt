@@ -1,0 +1,90 @@
+me 1
+Pacemaker sent ventrical signal On Time at t=0
+ERROR: Pacemaker sent atrial signal late at t=1001
+ERROR: Pacemaker sent ventrical signal late at t=1252
+ERROR: Pacemaker sent atrial signal late at t=2003
+
+me 2
+Pacemaker sent ventrical signal On Time at t=0
+sent atrial signal at t=50
+WARNING: pacemaker did not detect atrial signal at t=50
+sent atrial signal at t=100
+WARNING: pacemaker did not detect atrial signal at t=100
+ERROR: Pacemaker sent atrial signal early at t=198
+ERROR: Pacemaker sent ventrical signal early at t=449
+ERROR: Pacemaker sent atrial signal early at t=1200
+
+me 3
+Pacemaker sent ventrical signal On Time at t=0
+sent atrial signal at t=50
+WARNING: pacemaker did not detect atrial signal at t=50
+sent atrial signal at t=200
+WARNING: pacemaker did not detect atrial signal at t=200
+ERROR: Pacemaker sent ventrical signal early at t=602
+ERROR: Pacemaker sent atrial signal late at t=1002
+ERROR: Pacemaker sent ventrical signal early at t=1002
+ERROR: Pacemaker sent ventrical signal late at t=1253
+ERROR: Pacemaker sent atrial signal late at t=2004
+
+me 4
+Pacemaker sent ventrical signal On Time at t=0
+sent atrial signal at t=50
+WARNING: pacemaker did not detect atrial signal at t=50
+sent atrial signal at t=500
+WARNING: pacemaker did not detect atrial signal at t=500
+ERROR: Pacemaker sent atrial signal early at t=1198
+ERROR: Pacemaker sent ventrical signal late at t=1449
+ERROR: Pacemaker sent atrial signal late at t=2200
+ERROR: Pacemaker sent ventrical signal late at t=2451
+
+me 5
+Pacemaker sent ventrical signal On Time at t=0
+sent atrial signal at t=50
+WARNING: pacemaker did not detect atrial signal at t=50
+ERROR: Pacemaker sent atrial signal early at t=201
+sent atrial signal at t=351
+WARNING: pacemaker did not detect atrial signal at t=351
+ERROR: Pacemaker sent ventrical signal early at t=452
+ERROR: Pacemaker sent atrial signal early at t=1203
+
+me 6
+Pacemaker sent ventrical signal On Time at t=0
+sent atrial signal at t=150
+WARNING: pacemaker did not detect atrial signal at t=150
+sent atrial signal at t=250
+WARNING: pacemaker did not detect atrial signal at t=250
+ERROR: Pacemaker sent ventrical signal early at t=602
+ERROR: Pacemaker sent atrial signal late at t=1002
+ERROR: Pacemaker sent ventrical signal late at t=1253
+ERROR: Pacemaker sent atrial signal late at t=2004
+
+me 7
+Pacemaker sent ventrical signal On Time at t=0
+sent atrial signal at t=150
+WARNING: pacemaker did not detect atrial signal at t=150
+sent atrial signal at t=325
+WARNING: pacemaker did not detect atrial signal at t=325
+ERROR: Pacemaker sent ventrical signal early at t=447
+ERROR: Pacemaker sent atrial signal early at t=1198
+ERROR: Pacemaker sent ventrical signal early at t=1449
+
+me 8
+Pacemaker sent ventrical signal On Time at t=0
+sent atrial signal at t=150
+WARNING: pacemaker did not detect atrial signal at t=150
+ERROR: Pacemaker sent atrial signal early at t=730
+sent atrial signal at t=880
+WARNING: pacemaker did not detect atrial signal at t=880
+ERROR: Pacemaker sent ventrical signal early at t=981
+ERROR: Pacemaker sent atrial signal early at t=1732
+
+Results:
+Total tests: 8
+Total tests failed: 8	percentage: 100%
+Tests with errors: , me 1, me 2, me 3, me 4, me 5, me 6, me 7, me 8
+Total early ventricular signals: 8 	 average per test: 1
+Total early atrial signals: 8 	 average per test: 1
+Total late ventricular signals: 5 	 average per test: 6.250000e-01
+Total late atrial signals: 7 	 average per test: 8.750000e-01
+Total ventricular signals in error: 0 	 average per test: 0
+Total atrial signals in error: 0 	 average per test: 0

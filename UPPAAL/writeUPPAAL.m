@@ -1,6 +1,11 @@
 function [] = writeUPPAAL(filename, struct)
-%UNTITLED3 Summary of this function goes here
-%   Detailed explanation goes here
+%writeUPPAAL uses a UPPAAL structure made from readUPPAAL and writes it
+%into an UPPAAL xml file format.
+%
+% filename is a string of the name of the file to be written
+%
+%   struct is the UPPAAL structure generated from readUPPAAL
+
 
 %% Constants
 %% Main function
@@ -19,17 +24,31 @@ for t = 1:tottemps
     template_node = docNode.createElement('template');
     totName = length(struct.template{t}.name);
     %name nodes
-    for n = 1:totName
-        name = struct.template{t}.name{n};
+    if totName ~=0 
+        for n = 1:totName
+            name = struct.template{t}.name{n};
+            nameNode = makeNameNode(name);
+            template_node.appendChild(nameNode);
+        end
+    else
+        name.x = '0';
+        name.y = '0';
+        name.text = 'location';
         nameNode = makeNameNode(name);
         template_node.appendChild(nameNode);
     end
     %parameter nodes
     totParam = length(struct.template{t}.parameter);
-    for p = 1:totParam
-        parameter = struct.template{t}.parameter{p};
+    if totParam ~= 0
+        for p = 1:totParam
+            parameter = struct.template{t}.parameter{p};
+            parameterNode = makeParameterNode(parameter);
+            template_node.appendChild(parameterNode);
+        end
+    else
+        parameter = {'' '' ''};
         parameterNode = makeParameterNode(parameter);
-        template_node.appendChild(parameterNode);
+        template_node.appendChilde(parameterNode);
     end
     %declaration nodes
     totDec = length(struct.template{t}.declaration);
@@ -114,7 +133,7 @@ end
             declarations = '';
             for dec = 1:total
                 declarations = [declarations,declaration{dec,1},' ',addCommas(declaration{dec,2})];
-                if strcmp(declaration(dec,1),'clock')
+                if strcmp(declaration(dec,1),'clock') || length(declaration{dec,2}) > 1
                     declarations = sprintf([declarations,';\n']);
                 else
                     declarations = [declarations,'=',num2str(declaration{dec,3}),';'];
