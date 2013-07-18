@@ -5,7 +5,7 @@ load Medtronic_tests/medtronic_tests_1-75.mat
 load edge_cov.mat
 load pm_New_George.mat
 load initializer.mat
-%{
+
 index = [1:29, 31:34, 36:39, 40:43, 45:75]; %45:75; %[9,15,20,22,23,25,27,31,33,34,37,38,40,41,43];% %, 45:75]; 
 files = cell(length(index),1);
 for i = 1:length(index)
@@ -65,7 +65,7 @@ for i = 1:length(index)
     disp(num2str(index(i)));
     pacemaker_tester(file,initializer,pace_test,'tolerances',[5,5],'plot','signals','seePaceSense',1,'allowOffset', 1)
 end
-%}
+
 %pace_test = pace_param;
 %pacemaker_tester(test_File_9,initializer,pace_test,'plot','signals','tolerances',[5,5],'allowOffset', 1,'seePaceSense',1,'output','test_File_9_results.txt')
 %pacemaker_tester(test_File_15,initializer,pace_test,'plot','signals','tolerances',[5,5],'allowOffset', 1,'seePaceSense',1,'output','test_File_15_results.txt')
@@ -178,20 +178,20 @@ pace_test.PAARP = 120;
 pace_test.TURI = 545;
 pacemaker_tester(test_File_69,initializer,pace_test,'plot','signals','tolerances',[5,5],'allowOffset', 1,'seePaceSense',1,'output','test_File_69_results.txt')
 %}
-
+%{
 pace_test = pace_param;
 pace_test.TAVI = 200;
 pace_test.PAARP = 200;
 pace_test.TURI = 500; 
 pacemaker_tester(test_File_71,initializer,pace_test,'plot','signals','tolerances',[5,5],'allowOffset', 1,'seePaceSense',1,'output','test_File_71_results.txt')            
-
-
+%}
+%{
 pace_test = pace_param;
 pace_test.TAVI = 120;
 pace_test.PAARP = 120;
 pace_test.TURI = 666;
 pacemaker_tester(test_File_72,initializer,pace_test,'plot','signals','tolerances',[5,5],'allowOffset', 1,'seePaceSense',1,'output','test_File_72_results.txt')
-
+%}
 %{
 pace_test = pace_param;
 pace_test.TAVI = 200;
@@ -199,7 +199,7 @@ pace_test.PAARP = 200;
 pace_test.TURI = 750;
 pacemaker_tester(test_File_73,initializer,pace_test,'plot','signals','tolerances',[5,5],'allowOffset', 1,'seePaceSense',1,'output','test_File_73_results.txt')
 %}
-
+%{
 pace_test = pace_param;
 pace_test.TAVI = 200;
 pace_test.PAARP = 200;
@@ -209,7 +209,7 @@ pace_test.PVVRP = 500;
 pace_test.TURI = 750; 
 pacemaker_tester(test_File_74,initializer,pace_test,'plot','signals','tolerances',[5,5],'allowOffset', 1,'seePaceSense',1,'output','test_File_74_results.txt')
 pacemaker_tester(test_File_75,initializer,pace_test,'plot','signals','tolerances',[5,5],'allowOffset', 1,'seePaceSense',1,'output','test_File_75_results.txt')
-
+%}
 %{
 pace_param.TURI = 750;
 pacemaker_tester(test_File_40,initializer,pace_param,'plot','signals','tolerances',[5,5],'allowOffset', 1,'seePaceSense',1,'output','test_File_40_results.txt')
