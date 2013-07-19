@@ -35,8 +35,8 @@ function [lta] = createLTA(options) %takes in option struct, and then makes an L
     %Now we have everything set u.
     %We can now generate the LTA from these information::
     clockIndex = clocksIndex; 
-    createDBMS ();
-    createLTA ();
+    createDBMS();
+    createLTA();
     return
     end
     
@@ -45,6 +45,13 @@ function [lta] = createLTA(options) %takes in option struct, and then makes an L
     function [lta] = createLTA(xmlLoader) 
         map<string, Node*> nodesAdded;
         NodeKeeper xmlNode = nodes[initNode];
+        %{
+        NodeKeeper {
+            string dbm;
+            string locationVector;
+            string variableVector;
+            };
+        %}
         Node* ltaNode = createNode (xmlNode);
         LTA::Lta* lta = new LTA::Lta (ltaNode,new vector<string> (clocks));
    
@@ -60,7 +67,7 @@ function [lta] = createLTA(options) %takes in option struct, and then makes an L
         
         Transition* ltaTransition;
 
-        string nextNodeId;
+        nextNodeId; %is a string
         while xmlTransition ~= 0
             ltaTransition = createTransition(*xmlTransition);
             nextNodeId = xmlTransition->to;
