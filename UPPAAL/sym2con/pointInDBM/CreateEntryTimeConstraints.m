@@ -1,11 +1,11 @@
 function [dbm_t] = CreateEntryTimeConstraints()
 %UNTITLED12 Summary of this function goes here
 %   Detailed explanation goes here
-{
   clock_t start;
   if (doTime)
-    start = clock ();
-  //Create and initiliaze the dbm
+    start = clock();
+  end
+  %Create and initiliaze the dbm
   int dim = lta->getNumberOfLocations();
   entryTimeDBM = dbm_t(dim);
   raw_t* rawdbm= entryTimeDBM.getDBM ();
@@ -18,16 +18,16 @@ function [dbm_t] = CreateEntryTimeConstraints()
   const Location* loc;
 
   for (cindex_t i=0; i<n; i++)
-    {
+    
       loc = ltaIterator->getLocation();
       invariant = loc->getInvariant();
       CreateConstraint(rawdbm, dim, invariant, i, false);
       ltaIterator->move();
-    }
+  end
 
   ltaIterator = lta->getIterator();
   for (cindex_t i=0; i<n-1; i++)
-    {
+    
       loc = ltaIterator->getLocation();
       DBM(i, i+1) = dbm_bound2raw(0, dbm_WEAK);
 
@@ -38,17 +38,17 @@ function [dbm_t] = CreateEntryTimeConstraints()
       CreateConstraint(rawdbm, dim, invariant, i, true);
 
       ltaIterator->move();
-    }
+  end
 
-  if (doTime) {
+  if (doTime) 
     keep.createConstraint = (double)(clock()-start)/CLOCKS_PER_SEC;
     start = clock ();
-  }
+  end
 
     dbm_close (rawdbm,dim);
-    if (doTime) {
+    if (doTime) 
        keep.closeDBM = (double)(clock()-start)/CLOCKS_PER_SEC;
-    }
+    end
     delete ltaIterator;
     return entryTimeDBM;
 

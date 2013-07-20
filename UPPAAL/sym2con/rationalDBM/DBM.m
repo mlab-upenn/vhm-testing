@@ -6,14 +6,18 @@ function [dbm] = DBM(size)
     initLower();
 
     function setDiagonal()
-        zero = [0,0,0];
+        zero.bound = 0;
+        zero.strict = 0;
+        zero.unbound =0;
         for i=0:size
             dbm.bounds{x,y} = zero;
         end
     end
 
     function initLower()
-        zero = [0,0,0];
+        zero.bound = 0;
+        zero.strict = 0;
+        zero.unbound =0;
         for i=0:size
             dbm.bounds{x,y} = zero;
         end
