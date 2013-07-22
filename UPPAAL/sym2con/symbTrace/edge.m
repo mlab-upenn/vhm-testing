@@ -7,42 +7,10 @@ function [edge] = edge(r,dc_t_list,location,id,cindex_map)
   edge.id = id;
   createDBM (constraints,dbm, cindex_map);
   edge.isLoop = false;
-  edge.resetVector = convert(r, cindex_map);
+  edge.resetVector = edge_convert(r, cindex_map);
 
   
-  function buf = convert(s,index)
-      %const string& s, map<string,int> index
-        vector<int> buf;
-        istringstream str(s);
-        string buffer;
-        while (std::getline(str, buffer, ','))
-            %cout << "Converting: " << "," << buffer << "," <<endl;
-            if (buffer~= '')
-                buf.push_back (index[buffer]);
-            end
-        end
-        return buf;
-  end
-  
-    function createDBM(dc_t_list,dbm,cindex)
-        %void createDBM (list<dc_t*>*g, DBM& dbm,map<string,int> cindex) {
-        dbm = DBM(size(cindex));
-        for it =1:length(dc_t_list)
-            comp = dc_t_list{it}.op;
-            x = cindex((dc_t_list{it}.clockX];
-            y = cindex(dc_t_list{it}.clockY);
-            bound = dc_t_list{it}.bound;
-            if strcmp(comp,'lt')
-                dbm.constrain(x,y,Bound(mpq_class(bound),true));
-            elseif strcmp(comp,'leq')
-                dbm.constrain (x,y,Bound (mpq_class(bound),false));
-            else 
-                dbm.constrain(x,y,Bound (mpq_class(bound),false));
-                dbm.constrain(y,x,Bound (mpq_class(-1*bound),false));
-            end
-        end
-        dbm.close ();
-    end
+ 
 %{
 
 #include <list>
