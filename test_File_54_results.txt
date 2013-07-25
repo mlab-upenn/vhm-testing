@@ -1,0 +1,12 @@
+test_File_54
+initializing: 
+
+starting test
+Pacemaker paced ventricle on time at t=0. (Expected at t=0. Misalignment: 0)
+sent ventrical signal at t=200.
+WARNING: pacemaker did not detect ventrical signal at t=200.
+Pacemaker paced atrium on time at t=520. (Expected at t=520. Misalignment: 0)
+sent ventrical signal at t=570.
+WARNING: pacemaker did not detect ventrical signal at t=570.
+Pacemaker paced ventricle on time at t=601. (Expected at t=600. Misalignment: 1)
+

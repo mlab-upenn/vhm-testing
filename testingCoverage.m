@@ -8,6 +8,7 @@ load initializer.mat
 
 index = [1:29, 31:34, 36:39, 40:43, 45:75]; %45:75; %[9,15,20,22,23,25,27,31,33,34,37,38,40,41,43];% %, 45:75]; 
 files = cell(length(index),1);
+%{
 for i = 1:length(index)
     number = index(i);
     fileName = strcat('test_File_', num2str(number));
@@ -65,12 +66,12 @@ for i = 1:length(index)
     disp(num2str(index(i)));
     pacemaker_tester(file,initializer,pace_test,'tolerances',[5,5],'plot','signals','seePaceSense',1,'allowOffset', 1)
 end
-
-%pace_test = pace_param;
-%pacemaker_tester(test_File_9,initializer,pace_test,'plot','signals','tolerances',[5,5],'allowOffset', 1,'seePaceSense',1,'output','test_File_9_results.txt')
-%pacemaker_tester(test_File_15,initializer,pace_test,'plot','signals','tolerances',[5,5],'allowOffset', 1,'seePaceSense',1,'output','test_File_15_results.txt')
-%pacemaker_tester(test_File_20,initializer,pace_test,'plot','signals','tolerances',[5,5],'allowOffset', 1,'output','test_File_20_results.txt')
-%pacemaker_tester(test_File_22,initializer,pace_test,'plot','signals','tolerances',[5,5],'allowOffset', 1,'seePaceSense',1,'output','test_File_22_results.txt')
+%}
+pace_test = pace_param;
+pacemaker_tester(test_File_9,initializer,pace_test,'plot','signals','tolerances',[5,5],'allowOffset', 1,'seePaceSense',1,'output','test_File_9_results.txt')
+pacemaker_tester(test_File_15,initializer,pace_test,'plot','signals','tolerances',[5,5],'allowOffset', 1,'seePaceSense',1,'output','test_File_15_results.txt')
+pacemaker_tester(test_File_20,initializer,pace_test,'plot','signals','tolerances',[5,5],'allowOffset', 1,'output','test_File_20_results.txt')
+pacemaker_tester(test_File_22,initializer,pace_test,'plot','signals','tolerances',[5,5],'allowOffset', 1,'seePaceSense',1,'output','test_File_22_results.txt')
 %pacemaker_tester(test_File_23,initializer,pace_test,'plot','signals','tolerances',[5,5],'allowOffset', 1,'seePaceSense',1, 'output','test_File_23_results.txt')
 %pacemaker_tester(test_File_25,initializer,pace_test,'plot','signals','tolerances',[5,5],'allowOffset', 1,'seePaceSense',1,'output','test_File_25_results.txt')
 %pacemaker_tester(test_File_27,initializer,pace_test,'plot','signals','tolerances',[5,5],'allowOffset', 1,'seePaceSense',1,'output','test_File_27_results.txt')
@@ -112,7 +113,7 @@ pace_test.PAARP = 300;
 pace_test.TAVI = 300;
 pacemaker_tester(test_File_53,initializer,pace_test,'plot','signals','tolerances',[5,5],'allowOffset', 1,'seePaceSense',1,'output','test_File_53_results.txt')
 %}
-%{
+
 pace_test = pace_param;
 pace_test.TURI = 500;
 pace_test.PAARP = 80;
@@ -121,13 +122,13 @@ pace_test.VSP_thresh = 80;
 pace_test.TLRI = 600;
 pacemaker_tester(test_File_54,initializer,pace_test,'plot','signals','tolerances',[5,5],'allowOffset', 1,'seePaceSense',1,'output','test_File_54_results.txt')
 pacemaker_tester(test_File_55,initializer,pace_test,'plot','signals','tolerances',[5,5],'allowOffset', 1,'seePaceSense',1,'output','test_File_55_results.txt')
-%}
-%{
+
+
 pace_test = pace_param;
 pace_test.PAARP = 150;
 pace_test.TAVI = 150;
 pacemaker_tester(test_File_56,initializer,pace_test,'plot','signals','tolerances',[5,5],'allowOffset', 1,'seePaceSense',1,'output','test_File_56_results.txt')
-%}
+
 %{
 pace_test = pace_param;
 pace_test.TAVI = 200;

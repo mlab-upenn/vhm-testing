@@ -32,14 +32,6 @@ allowTolerances = 1;
 allowOffsets = 1;
 plotTest = 1;
 
-%% Extras
-sendText = 0;
-cellNumber = 'gmchen';
-service = 'textnow';
-subject = '';
-message = 'Master, I have finished computing - mLab computer. Problems: ';
-badMessage = 'Master, something went wrong -mLab computer';
-
 %% Preallocation
 load Pacemaker_models/medtronic_params_VRP_300
 load Medtronic_tests/medtronic_test_1-75

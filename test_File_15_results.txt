@@ -1,0 +1,13 @@
+test_File_15
+initializing: 
+
+starting test
+Pacemaker paced ventricle on time at t=0. (Expected at t=0. Misalignment: 0)
+sent atrial signal at t=150.
+WARNING: pacemaker did not detect atrial signal at t=150.
+sent atrial signal at t=325.
+pacemaker detected atrial signal at t=325.
+Pacemaker paced ventricle on time at t=601. (Expected at t=600. Misalignment: 1)
+Pacemaker paced atrium on time at t=1327. (Expected at t=1326. Misalignment: 1)
+Pacemaker paced ventricle on time at t=1578. (Expected at t=1578. Misalignment: 0)
+

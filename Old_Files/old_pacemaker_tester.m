@@ -544,7 +544,7 @@ while t < initializer_File(end,1)
             end
     end
         if sendASignal == 1
-            pace_param = pacemaker_new(pace_param,1,0, pace_inter);
+            pace_param = pacemaker_new_george(pace_param,1,0, pace_inter);
             if displayInitializer
                 writeReport(output,SENT_A_SIG,NaN,2)
             end
@@ -562,7 +562,7 @@ while t < initializer_File(end,1)
                 end
             end
         elseif sendVSignal == 1
-            pace_param = pacemaker_new(pace_param,0,1, pace_inter);
+            pace_param = pacemaker_new_george(pace_param,0,1, pace_inter);
             if displayInitializer
                 writeReport(output,SENT_V_SIG,NaN,2)
             end
@@ -580,7 +580,7 @@ while t < initializer_File(end,1)
                 end
             end
         else
-            pace_param = pacemaker_new(pace_param,0,0, pace_inter);
+            pace_param = pacemaker_new_george(pace_param,0,0, pace_inter);
         end
     pace_param;
     t= t+1;
@@ -604,7 +604,7 @@ if nextTime == 0
                 if aPaced && vPaced
                     break;
                 end
-                pace_param = pacemaker_new(pace_param,0,0, pace_inter);
+                pace_param = pacemaker_new_george(pace_param,0,0, pace_inter);
             end
         case VENTRICAL_OUTPUT
             while 1
@@ -617,7 +617,7 @@ if nextTime == 0
                 if aPaced && vPaced
                     break;
                 end
-                pace_param = pacemaker_new(pace_param,0,0, pace_inter);
+                pace_param = pacemaker_new_george(pace_param,0,0, pace_inter);
             end
         otherwise
         %TODO:deal with cases when the test is not initiated by pacing
@@ -1097,7 +1097,7 @@ while t< total_time
     end
     %% Send signals/next Time Step
         if sendASignal == 1 %if an atrial sense needs to be sent
-            pace_param = pacemaker_new(pace_param,1,0, pace_inter);
+            pace_param = pacemaker_new_george(pace_param,1,0, pace_inter);
             writeReport(output,SENT_A_SIG,NaN,2)
             if pace_param.a_sense
                 if seePaceSense
@@ -1110,7 +1110,7 @@ while t< total_time
             end
             sendASignal = 0;
         elseif sendVSignal == 1 %if a ventricular sense needs to be sent
-            pace_param = pacemaker_new(pace_param,0,1, pace_inter);
+            pace_param = pacemaker_new_george(pace_param,0,1, pace_inter);
             writeReport(output,SENT_V_SIG,NaN,2)
             if pace_param.v_sense
                 if seePaceSense
@@ -1123,7 +1123,7 @@ while t< total_time
             end
             sendVSignal = 0;
         else %otherwise, go to next time step.
-            pace_param = pacemaker_new(pace_param,0,0, pace_inter);
+            pace_param = pacemaker_new_george(pace_param,0,0, pace_inter);
         end
 
 %% Break/Escape test conditions        
@@ -1172,12 +1172,12 @@ end
 if exportPlot
     if totalFiles <=1
         if exist(exportFile,'file') > 0;
-            export_fig(exportFile,'-append','-nocrop');
+            export_fig(exportFile,'-append');
         else
-            export_fig(exportFile,'-nocrop');
+            export_fig(exportFile);
         end
     elseif totalFile > 1
-        export_fig(exportFile,'-append','-nocrop')
+        export_fig(exportFile,'-append')
     end
 end
 end
