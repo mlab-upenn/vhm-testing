@@ -1,7 +1,7 @@
 classdef DCCreator
     %UNTITLED13 Summary of this class goes here
     %   Detailed explanation goes here
-    properties (Constant)
+    properties (SetAccess = public)
         doTime; %bool
         keep;%timeKeeper
     end
@@ -140,11 +140,6 @@ classdef DCCreator
                 for clocknr = 1:obj.lta.getNumberOfClocks()
                     search = [',',obj.lta.getClockNames(){clocknr},','];
                     pos = strfind(edge.getReset(),search);
-                    if isempty(pos)
-                        obj.lastresetdata((location*clocks)+clocknr) = obj.lastresetdata(((location-1)*clocks)+clocknr);
-                    else
-                        obj.lastresetdata(location*clocks+clocknr) = location;
-                    end
                 end
             end
             

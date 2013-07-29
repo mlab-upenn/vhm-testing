@@ -1,0 +1,8 @@
+test_File_75
+initializing: 
+
+starting test
+Pacemaker paced ventricle on time at t=0. (Expected at t=0. Misalignment: 0)
+sent ventrical signal at t=300.
+ERROR: Pacemaker incorrectly paced atrium. at t=800. (Expected at t=NaN. Misalignment: NaN)
+

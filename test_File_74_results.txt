@@ -1,0 +1,11 @@
+test_File_74
+initializing: 
+
+starting test
+Pacemaker paced ventricle on time at t=0. (Expected at t=0. Misalignment: 0)
+sent ventrical signal at t=300.
+sent atrial signal at t=750.
+Pacemaker paced atrium on time at t=800. (Expected at t=800. Misalignment: 0)
+Pacemaker paced ventricle on time at t=1052. (Expected at t=1050. Misalignment: 2)
+Pacemaker paced atrium on time at t=1801. (Expected at t=1802. Misalignment: -1)
+
