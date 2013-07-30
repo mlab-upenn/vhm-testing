@@ -17,7 +17,6 @@ classdef trace
         delay; %DBM
         trans; %Transition
         backTrans; %Transition
-
         valEntry; %VariableAssignment
         valDelay; %VariableAssignment
         
