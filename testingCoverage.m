@@ -67,7 +67,7 @@ for i = 1:length(index)
     pacemaker_tester(file,initializer,pace_test,'tolerances',[5,5],'plot','signals','seePaceSense',1,'allowOffset', 1)
 end
 %}
-%{
+
 pace_test = pace_param;
 pacemaker_tester(test_File_9,initializer,pace_test,'plot','signals','tolerances',[5,5],'allowOffset',1,'output','test_File_9_results.txt')
 pacemaker_tester(test_File_15,initializer,pace_test,'plot','signals','tolerances',[5,5],'allowOffset', 1,'seePaceSense',1,'output','test_File_15_results.txt')
@@ -78,7 +78,7 @@ pacemaker_tester(test_File_25,initializer,pace_test,'plot','signals','tolerances
 pacemaker_tester(test_File_27,initializer,pace_test,'plot','signals','tolerances',[5,5],'allowOffset', 1,'seePaceSense',1,'output','test_File_27_results.txt')
 pacemaker_tester(test_File_31,initializer,pace_test,'plot','signals','tolerances',[5,5],'allowOffset', 1,'seePaceSense',1,'output','test_File_31_results.txt')
 pacemaker_tester(test_File_33,initializer,pace_test,'plot','signals','tolerances',[5,5],'allowOffset', 1,'seePaceSense',1,'output','test_File_33_results.txt')
-%}
+
 %{
 pace_test = pace_param;
 pace_test.PVVRP = 300;

@@ -2,8 +2,13 @@ classdef DCCreator
     %UNTITLED13 Summary of this class goes here
     %   Detailed explanation goes here
     properties (Constant)
-        doTime; %bool
-        keep;%timeKeeper
+        %from constraints.h
+        dbm_WEAK = 1;
+        dbm_STRICT = 0;
+        
+        
+      %  doTime; %bool
+      %  keep;%timeKeeper
     end
     properties (SetAccess = private)
         % comparison for strings
@@ -40,6 +45,14 @@ classdef DCCreator
          %}   
     end
     
+    methods (Static)
+        %from constraints.h
+        function raw = dbm_bound2raw(bound,strict)
+            raw = bitsra(bound,-1);
+            raw = bitor(raw,strict);
+        end
+    end
+    
     methods
         function bool = isLess(obj, x,y)
             strictnessX = obj.dbm_rawIsStrict(x);
@@ -66,7 +79,8 @@ classdef DCCreator
             end
             obj.clocknumbermap = containers.Map;
             for i=1:obj.lta.getNumberOfClocks()
-                obj.clocknumbermap(obj.lta.getClockNames(){i}) = i;
+                clockNames = obj.lta.getClockNames();
+                obj.clocknumbermap(clockNames{i}) = i;
             end
             obj.CreateLastResetAtTable();
             %DCCreator(Lta*, string&);
@@ -75,13 +89,13 @@ classdef DCCreator
         %TODO:fix this function
         function entryTimeDBM = CreateEntryTimeConstraints(obj)
             start;%clock_t
-            if doTime
+            if Solver.doTime
                 start = clock();
                 dim = obj.lta.getNumberOfLocations();
                 entryTimeDBM = dbm_t(dim);
                 rawdbm = entryTimeDBM.getDBM();%raw_t 
                 dbm_init(rawdbm,dim);
-                ltaIterator = lta.getIterator(); %LtaIterator *
+                ltaIterator = obj.lta.getIterator(); %LtaIterator *
                 n = obj.lta.getNumberOfLocations(); %cindex_t
                 invariant; %list<dc_t>
                 guard; %list<dc_t>
@@ -92,10 +106,10 @@ classdef DCCreator
                     obj.CreateConstraint(rawdbm,dim,invariant,i,false);
                     ltaIterator.move();
                 end
-                ltaIterator = lta.getIterator();
+                ltaIterator = obj.lta.getIterator();
                 for i=1:n-1
                     loc = ltaIterator.getLocation();
-                    DBM(i,i+1) = dbm_bound2raw(0,dbm_WEAK);
+                    rawdbm((i)*dim+(i+1)) = DCCreator.dbm_bound2raw(0,DCCreator.dbm_WEAK);
                     %DBM(I,J) rawdbm[(I)*dim+(J)]
                     guard = loc.getEdge().getGuard();
                     obj.CreateConstraint(rawdbm,dim,guard,i,true);
@@ -106,8 +120,10 @@ classdef DCCreator
                     ltaIterator.move();
                 end
                 
-                if doTime
+                if Solver.doTime
+                    keep = SolutionFinder.keep();
                     keep.closeDBM = (clock()-start)/CLOCKS_PER_SEC;
+                    SolutionFinder.keep(keep);
                 end
             end
             %dbm_t& CreateEntryTimeConstraints();
@@ -115,6 +131,11 @@ classdef DCCreator
     end
     
     methods (Access = private)
+        
+        function out = DBM(I,J,dim,rawdbm)
+            out = rawdbm((I)*dim+(J));
+        end
+        
         function int = LastResetAt(obj,locId,clock)
             clockNr = obj.clocknumbermap(clock);
             int = obj.lastresetdata(locId*(obj.lta.getNumberOfClocks())+clockNr);
@@ -138,7 +159,8 @@ classdef DCCreator
             for location = 1:obj.lta.getNumberOfLocations()-1
                 edge = ltaIterator.getEdge();
                 for clocknr = 1:obj.lta.getNumberOfClocks()
-                    search = [',',obj.lta.getClockNames(){clocknr},','];
+                    clockNames = obj.lta.getClockNames();
+                    search = [',',clockNames{clocknr},','];
                     pos = strfind(edge.getReset(),search);
                     if isempty(pos)
                         obj.lastresetdata((location*clocks)+clocknr) = obj.lastresetdata(((location-1)*clocks)+clocknr);
@@ -176,15 +198,15 @@ classdef DCCreator
             end
         end
         function obj = constrainEntry(obj,rawdbm,dim,i,j,bound,isStrict)
-            newval; %raw_t
+            newval; %raw_t is just an integer
             if isStrict
-                newval = dbm_bound2raw(bound,dbm_STRICT);
+                newval = DCCreator.dbm_bound2raw(bound,DCCreator.dbm_STRICT);
                 
             else
-                newval = dbm_bound2raw(bound,dbm_WEAK);
+                newval = DCCreator.dbm_bound2raw(bound,DCCreator.dbm_WEAK);
             end
-            if isLess(newval,DBM(i,j))
-                DBM(i,j) = newval;
+            if obj.isLess(newval,rawdbm((i)*dim+(j)))
+                rawdbm((i)*dim+(j)) = newval;
             end
             %void constrainEntry(raw_t*, int, int, int, int, bool);
         end
