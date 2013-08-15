@@ -47,15 +47,24 @@ l is the name of the state of the timed automata
 v is the valuation of the clock (i.e.v(A_timer) = 500, v(V_timer) = 200)
 d is the delay
 r is the reset
+g is difference constraints
+
+r=0 is a reset operator that resets each valuation by r
+    (v+d)(x) = v(x) + d if x~=0, v(x) if x = 0
+    v(r=0)(x) = 0 if x is an element of r, v(x)  if x is not an element of
+    r
 %}
 function v = pretime(Pi1,Pi2)
    
 %pretime(?,?') = {v|v?? and there exists d?R?0 such that (v+d)??'}
 end
 
+function preaction(Pi1,g,r,Pi2)
 
+%preaction(?,g,r,?') = {v|v?? s.t. v = g and v(r=0)??'}
+end
 %{
 ? is the set of valuations over C
 
-preaction(?,g,r,?) = {v|v?? s.t. v = g and v(r=0)??}
+
 %}
