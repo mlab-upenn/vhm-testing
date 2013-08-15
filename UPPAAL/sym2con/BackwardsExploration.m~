@@ -10,18 +10,45 @@ n = length(trace);
     return
  end
  
+ %vn=FINDPOINT(pretime(Dn ? (Dn?1 ? gn?1)rn?1=0, {vn? }) ) ;
  
- v(n) = FindPoint();
+ input1 = intersection(trace.D(n),intersection(trace.D(n-1),trace.g(n-1)));
+ pTime = pretime(input1, vPrime(n));
+ [inconsistent v(n)] = FindPoint(pTime);
+ if inconsistent
+    concretization = 0;
+    disp('pTime is not consistent');
+    return
+ end 
+ 
+ d(n) = vPrime(n)-v(n);
+ %Set dn such that vn? =vn +dn;
  
  
- for  i = n:2
-    vPrime(i) = FindPoint(); %vi? =FINDPOINT(preaction(Di,gi,ri,{vi+1}));
-    v(i) = FindPoint(); %vi=FINDPOINT(pretime(Di ? (Di?1 ? gi?1)ri?1=0, {vi?}) ) ;
+ for  i = n-1:-1:2
+    %vi? =FINDPOINT(preaction(Di,gi,ri,{vi+1}));
+    pAction = preaction(trace.D(i),trace.g(i),trace.r(i),v(i+1));
+    vPrime(i) = FindPoint(pAction); 
+    %vi=FINDPOINT(pretime(Di ? (Di?1 ? gi?1)ri?1=0, {vi?}) ) ;
+    prTime = pretime(intersection(trace.D(i),intersection(trace.D(i-1),trace.g(i-1))),vPrime(i));
+    v(i) = FindPoint(prTime); 
     %Set di such that vi+di =vi?;
+    d(i) = v(i)-vPrime(i);
  end
  %v1? = FINDPOINT(preaction(D1, g1, r1, {v2})) ;
+ prAction = preaction(trace.D(1),trace.g(1),trace.r(1),v(2));
+ vPrime(1) = FindPoint(prAction);
+ 
  %v1 = FINDPOINT(pretime(D1, {v1? })) ;
+ preTime = pretime(trace.D(1),vPrime(1));
+ v(1) = FindPoint(preTime);
+
  %Set d1 such that v1?=v1+d1;
+ d(1) = vPrime(1)-v(1);
+ 
+ concretization.l = trace.l;
+ concretization.v = v;
+ concretization.d = d;
 end
 
 %{
@@ -46,8 +73,8 @@ Terminology
 l is the name of the state of the timed automata
 v is the valuation of the clock (i.e.v(A_timer) = 500, v(V_timer) = 200)
 d is the delay
-r is the reset
-g is difference constraints
+r is the reset i.e. y(r=0) means to reset y
+g is difference constraints (i.e. x >=2)
 
 r=0 is a reset operator that resets each valuation by r
     (v+d)(x) = v(x) + d if x~=0, v(x) if x = 0
@@ -59,12 +86,14 @@ function v = pretime(Pi1,Pi2)
 %pretime(?,?') = {v|v?? and there exists d?R?0 such that (v+d)??'}
 end
 
-function preaction(Pi1,g,r,Pi2)
+function v = preaction(Pi1,g,r,Pi2)
 
 %preaction(?,g,r,?') = {v|v?? s.t. v = g and v(r=0)??'}
 end
 %{
 ? is the set of valuations over C
-
-
 %}
+
+function d = intersection(d1,d2)
+    d = d1.*(d1==d2);
+end
