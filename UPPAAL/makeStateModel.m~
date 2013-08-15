@@ -24,7 +24,7 @@ function [model ifStruct] = makeStateModel(ifFile,xtrFile)
 %   transition. if model{n}.transition.process{p} is empty, not transition was
 %   made.
 ifStruct = readIFFile(ifFile);
-la = ifStruct;
+
 fid = fopen(xtrFile);
 
 processCount = length(ifStruct.processes);
@@ -34,15 +34,14 @@ stateCount = 1;
 model = {};
 
 while ~feof(fid)
-    [xtrStateStruct xtrTransStruct] = makeStateTransStruct(fid,processCount,variableCount,clockCount);
-    
+    [xtrStateStruct xtrTransStruct] = makeStateTransStruct(fid,processCount,variableCount,clockCount)
     if feof(fid) || isempty(xtrStateStruct)
         break;
     end
     for i = 1:processCount
         model{stateCount}.state.process{i}.name = ifStruct.processes{i}.name;
         location = ifStruct.processes{i}.locations;
-        location = location{xtrStateStruct.locations(i) + 1};
+        location = location{xtrStateStruct.locations(i) + 1}
         model{stateCount}.state.process{i}.location = location;
     end
         model{stateCount}.state.dbm = xtrStateStruct.dbm;

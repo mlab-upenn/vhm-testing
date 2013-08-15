@@ -3,6 +3,8 @@ classdef trace
     %   Detailed explanation goes here
     
     %THIS CODE IS INCOMPLETE
+    %%TODO: perhaps create 3 different classes. trace is a namespace with
+    %%three classes
     properties (SetAccess = private)
         %Transitions
         i = 0;

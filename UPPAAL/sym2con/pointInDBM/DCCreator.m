@@ -197,7 +197,7 @@ classdef DCCreator
                 end
             end
         end
-        function obj = constrainEntry(obj,rawdbm,dim,i,j,bound,isStrict)
+        function [obj rawdbm] = constrainEntry(obj,rawdbm,dim,i,j,bound,isStrict)
             newval; %raw_t is just an integer
             if isStrict
                 newval = DCCreator.dbm_bound2raw(bound,DCCreator.dbm_STRICT);

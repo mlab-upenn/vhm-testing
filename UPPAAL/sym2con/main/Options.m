@@ -29,6 +29,7 @@ classdef Options
     end
     
     methods
+        %TODO: make this more matlab-compatible
         function options = loadOptions(argc,argv)
             i;
             options.zeroRep = 'sys.t(0)';
