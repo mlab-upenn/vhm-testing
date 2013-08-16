@@ -10,7 +10,7 @@ n = length(trace);
     return
  end
  
- %vn=FINDPOINT(pretime(Dn ? (Dn?1 ? gn?1)rn?1=0, {vn? }) ) ;
+ %vn=FINDPOINT(pretime(Dn ? (Dn?1 ? gn?1)r(n?1)=0, {vn? }) ) ;
  
  input1 = intersection(trace.D(n),intersection(trace.D(n-1),trace.g(n-1)));
  pTime = pretime(input1, vPrime(n));
@@ -82,8 +82,8 @@ r=0 is a reset operator that resets each valuation by r
     r
 %}
 function v = pretime(Pi1,Pi2)
-   
-%pretime(?,?') = {v|v?? and there exists d?R?0 such that (v+d)??'}
+    
+    %pretime(?,?') = {v|v?? and there exists d?R?0 such that (v+d)??'}
 end
 
 function v = preaction(Pi1,g,r,Pi2)

@@ -18,8 +18,8 @@
 %   model{n}.transition.process{p}.edge will show with edge was use for the
 %   transition. if model{n}.transition.process{p} is empty, not transition was
 %   made.
-ifFile = 'model.if';
-xtrFile = 'test.xtr';
+ifFile = 'PMmodel.if';
+xtrFile = 'PMtest.xtr';
 ifStruct = readIFFile(ifFile);
 
 fid = fopen(xtrFile);
@@ -36,11 +36,19 @@ while ~feof(fid)
         break;
     end
     for i = 1:processCount
+        i
+     %   p = processCount
+     %   l = length(xtrStateStruct.locations)
+     %   le = length(location)
         model{stateCount}.state.process{i}.name = ifStruct.processes{i}.name;
+        
         location = ifStruct.processes{i}.locations;
         location = location{xtrStateStruct.locations(i) + 1};
         model{stateCount}.state.process{i}.location = location;
+        
+        
     end
+    oldStateStruct = xtrStateStruct; %.locations(1)
         model{stateCount}.state.dbm = xtrStateStruct.dbm;
         
         

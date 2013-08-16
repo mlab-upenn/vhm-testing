@@ -8,10 +8,11 @@ variables = zeros(variableCount,1);
 dbm = cell(clockCount,clockCount);
 
 prevPos = ftell(fileId);
-[a pos] = textscan(fileId,'%c\n','EndOfLine','\n');
+[a pos] = textscan(fileId,'%c\n','EndOfLine','\n')
 if length(a{1}) >1
-    a{1} = a{1}(2);
+    a{1} = a{1}(2)
 end
+a{1}
 %check if end of file
 if ~strcmp(a{1},'.')
     fseek(fileId,prevPos-pos,'cof');
@@ -39,11 +40,11 @@ if ~strcmp(a{1},'.')
     %      Inf  0  Inf
     %      Inf Inf  0
 
-    locations = fscanf(fileId,'%d');
+    locations = fscanf(fileId,'%d')
 
-    fscanf(fileId,'.');
+    fscanf(fileId,'.')
 
-    difboundM = fscanf(fileId,'%d\n%d\n%d\n.');
+    difboundM = fscanf(fileId,'%d\n%d\n%d\n.')
     for d = 1:3:length(difboundM)
         sample = difboundM(d:d+2);
         r = sample(1) + 1;
@@ -54,9 +55,9 @@ if ~strcmp(a{1},'.')
         dbm{r,c} = bound_t;
     end
 
-    fscanf(fileId,'.');
+    f= fscanf(fileId,'.')
 
-    variables = fscanf(fileId,'%d');
+    variables = fscanf(fileId,'%d')
 
 
 
@@ -64,14 +65,17 @@ if ~strcmp(a{1},'.')
     stateStruct.variables = variables;
     stateStruct.dbm = dbm;
 
-    textscan(fileId,'.');
+    textscan(fileId,'.')
     %% Make transition Struct
     edges = zeros(processCount,1);
 
     prevPos = ftell(fileId);
-    [data, pos] = textscan(fileId,'%d %d\n','EndOfLine','\n','whitespace', ' ');
-    if isempty(data{2})
+    [check, pos] = textscan(fileId,'%c %c\n','EndOfLine','\n') 
+%    [data, pos] = textscan(fileId,'%d %d\n','EndOfLine','\n','whitespace', ' ')
+%    data{2}
+    if strcmp(check{2},sprintf('\n'))
         fseek(fileId,prevPos-pos,'cof');
+        disp('true');
     else
         fseek(fileId,prevPos-pos,'cof');
         fscanf(fileId,'.');

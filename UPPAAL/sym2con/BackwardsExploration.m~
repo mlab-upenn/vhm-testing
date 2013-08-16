@@ -10,7 +10,7 @@ n = length(trace);
     return
  end
  
- %vn=FINDPOINT(pretime(Dn ? (Dn?1 ? gn?1)rn?1=0, {vn? }) ) ;
+ %vn=FINDPOINT(pretime(Dn ? (Dn?1 ? gn?1)r(n?1)=0, {vn? }) ) ;
  
  input1 = intersection(trace.D(n),intersection(trace.D(n-1),trace.g(n-1)));
  pTime = pretime(input1, vPrime(n));
@@ -70,9 +70,9 @@ Output: A concretization of ?
 %}
 %{
 Terminology
-l is the name of the state of the timed automata
+l is the name of the state (or location) of the timed automata.
 v is the valuation of the clock (i.e.v(A_timer) = 500, v(V_timer) = 200)
-d is the delay
+d is the delay in clock time between each state
 r is the reset i.e. y(r=0) means to reset y
 g is difference constraints (i.e. x >=2)
 
@@ -82,8 +82,8 @@ r=0 is a reset operator that resets each valuation by r
     r
 %}
 function v = pretime(Pi1,Pi2)
-   
-%pretime(?,?') = {v|v?? and there exists d?R?0 such that (v+d)??'}
+    
+    %pretime(?,?') = {v|v?? and there exists d?R?0 such that (v+d)??'}
 end
 
 function v = preaction(Pi1,g,r,Pi2)
